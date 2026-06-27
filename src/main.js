@@ -842,7 +842,108 @@ function abrirChecklist(id) {
   abrirOv('ov-chk')
 }
 
-document.getElementById('btn-salva-chk').addEventListener('click', async () => {
+document.getElementById('btn-rel-chk').addEventListener('click', () => {
+  const h = HID.find(x => x.id === chkId); if (!h) return
+  gerarRelatorioChecklist(h)
+})
+
+function gerarRelatorioChecklist(h) {
+  const hist = Array.isArray(h.checklist) ? h.checklist : []
+  const ultimos = hist.slice(-10).reverse() // últimos 10
+
+  function cor(v) {
+    if (!v || v === '—') return '#666'
+    if (v === 'Bom' || v === 'Presente') return '#1E8449'
+    if (v === 'Regular') return '#D68910'
+    return '#C0392B'
+  }
+
+  function linha(label, val) {
+    if (!val) return ''
+    return `<tr>
+      <td style="padding:4px 8px;color:#555;font-size:10pt">${label}</td>
+      <td style="padding:4px 8px;font-weight:700;font-size:10pt;color:${cor(val)}">${val}</td>
+    </tr>`
+  }
+
+  const now = new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'})
+
+  let corpo = ''
+  ultimos.forEach((ins, i) => {
+    corpo += `
+    <div style="border:1pt solid #ccc;border-radius:6pt;padding:12pt;margin-bottom:14pt;page-break-inside:avoid">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8pt;border-bottom:1pt solid #eee;padding-bottom:6pt">
+        <b style="font-size:12pt;color:#1A5276">Inspeção ${ultimos.length - i}ª mais recente</b>
+        <span style="font-size:10pt;color:#555">📅 ${fdata(ins.data)} &nbsp;·&nbsp; 👤 ${ins.resp||'—'}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        <tr style="background:#f5f5f5">
+          <td colspan="2" style="padding:3px 8px;font-size:9pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px">Itens Inspecionados</td>
+        </tr>
+        ${linha('Mangueira 1', ins.mang1)}
+        ${linha('Mangueira 2', ins.mang2)}
+        ${linha('Chave', ins.chave)}
+        ${linha('Esguicho', ins.esguicho)}
+        ${linha('Abrigo / Caixa', ins.abrigo)}
+        ${linha('Registro', ins.registro)}
+        ${linha('Lacre', ins.lacre)}
+      </table>
+      ${ins.hid1_ult || ins.hid2_ult ? `
+      <table style="width:100%;border-collapse:collapse;margin-top:6pt">
+        <tr style="background:#f5f5f5">
+          <td colspan="2" style="padding:3px 8px;font-size:9pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px">Teste Hidrostático das Mangueiras</td>
+        </tr>
+        ${ins.hid1_ult ? `<tr><td style="padding:3px 8px;font-size:10pt;color:#555">Mangueira 1 — Último</td><td style="padding:3px 8px;font-size:10pt;font-weight:700">${fmm(ins.hid1_ult)}</td></tr>` : ''}
+        ${ins.hid1_prox ? `<tr><td style="padding:3px 8px;font-size:10pt;color:#555">Mangueira 1 — Próximo</td><td style="padding:3px 8px;font-size:10pt;font-weight:700">${fmm(ins.hid1_prox)}</td></tr>` : ''}
+        ${ins.hid2_ult ? `<tr><td style="padding:3px 8px;font-size:10pt;color:#555">Mangueira 2 — Último</td><td style="padding:3px 8px;font-size:10pt;font-weight:700">${fmm(ins.hid2_ult)}</td></tr>` : ''}
+        ${ins.hid2_prox ? `<tr><td style="padding:3px 8px;font-size:10pt;color:#555">Mangueira 2 — Próximo</td><td style="padding:3px 8px;font-size:10pt;font-weight:700">${fmm(ins.hid2_prox)}</td></tr>` : ''}
+      </table>` : ''}
+      ${ins.obs ? `<div style="margin-top:6pt;font-size:10pt;color:#333;font-style:italic;padding:6pt;background:#f9f9f9;border-radius:4pt">"${ins.obs}"</div>` : ''}
+    </div>`
+  })
+
+  if (!ultimos.length) {
+    corpo = '<div style="text-align:center;color:#999;padding:24pt">Nenhuma inspeção registrada.</div>'
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Checklist — ${h.num}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 16mm; color: #111; background: #fff }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact } }
+  </style>
+</head>
+<body>
+  <div style="border-bottom:2pt solid #7B241C;padding-bottom:10pt;margin-bottom:16pt">
+    <div style="font-size:9pt;color:#888;text-transform:uppercase;letter-spacing:.7px;margin-bottom:2pt">Hospital Regional de Santa Maria — Brigada de Incêndio</div>
+    <div style="font-size:18pt;font-weight:700;color:#7B241C">Relatório de Checklist — ${h.num}</div>
+    <div style="font-size:10pt;color:#555;margin-top:4pt">
+      Local: <b>${h.loc}</b> &nbsp;·&nbsp; Tipo: <b>${h.tp}</b> &nbsp;·&nbsp; Gerado em: <b>${now}</b>
+    </div>
+    <div style="font-size:10pt;color:#555">Exibindo os últimos <b>${ultimos.length}</b> registros de inspeção</div>
+  </div>
+  ${corpo}
+  <div style="text-align:center;font-size:9pt;color:#999;margin-top:16pt;border-top:1pt solid #eee;padding-top:8pt">
+    HRSM — Brigada de Incêndio — ${now}
+  </div>
+  <script>window.onload = () => window.print()<\/script>
+</body>
+</html>`
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'})
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href = url
+  a.download = `checklist_${h.num}_${new Date().toISOString().slice(0,10)}.html`
+  a.style.display = 'none'
+  document.body.appendChild(a)
+  a.click()
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 1500)
+  toast('📄 Relatório gerado!', 'ok')
+}
   const h = HID.find(x => x.id === chkId); if (!h) return
   const data = document.getElementById('chk-data').value
   if (!data) { toast('⚠️ Informe a data da inspeção'); return }

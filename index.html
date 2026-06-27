@@ -297,12 +297,12 @@
 
       <div class="fsec">Teste Hidrostático das Mangueiras</div>
       <div class="g2">
-        <div class="mfg"><label>Mangueira 1 — Último Teste</label><input id="chk-hid1-ult" type="date"></div>
-        <div class="mfg"><label>Mangueira 1 — Próximo Teste</label><input id="chk-hid1-prox" type="date"></div>
+        <div class="mfg"><label>Mangueira 1 — Último Teste</label><input id="chk-hid1-ult" type="month"></div>
+        <div class="mfg"><label>Mangueira 1 — Próximo Teste</label><input id="chk-hid1-prox" type="month"></div>
       </div>
       <div class="g2">
-        <div class="mfg"><label>Mangueira 2 — Último Teste</label><input id="chk-hid2-ult" type="date"></div>
-        <div class="mfg"><label>Mangueira 2 — Próximo Teste</label><input id="chk-hid2-prox" type="date"></div>
+        <div class="mfg"><label>Mangueira 2 — Último Teste</label><input id="chk-hid2-ult" type="month"></div>
+        <div class="mfg"><label>Mangueira 2 — Próximo Teste</label><input id="chk-hid2-prox" type="month"></div>
       </div>
 
       <div class="fsec">Observações</div>
@@ -313,8 +313,9 @@
       <div id="chk-hist" style="font-size:12px;color:var(--muted)">Nenhuma inspeção anterior.</div>
 
     </div>
-    <div class="mfoot">
+    <div class="mfoot" style="flex-wrap:wrap;gap:8px">
       <button class="btn bout bfull" data-close="ov-chk">Cancelar</button>
+      <button class="btn bgreen bfull" id="btn-rel-chk">📄 Relatório</button>
       <button class="btn bblue bfull" id="btn-salva-chk">✅ Salvar Inspeção</button>
     </div>
   </div>
