@@ -295,6 +295,7 @@ function renderHid() {
       <div class="cupd"><span>👤 ${h.upd_by||'—'}</span><span>🕐 ${fdt(h.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${h.id}" data-act="edit-hid">✏️ Editar</button>
+        <button class="bmo" data-id="${h.id}" data-act="chk-hid">📋 Checklist</button>
         ${delBtn}
       </div>
     </div>`
@@ -304,6 +305,7 @@ function renderHid() {
     btn.addEventListener('click', () => {
       if (btn.dataset.act === 'edit-hid') editHid(btn.dataset.id)
       if (btn.dataset.act === 'del-hid')  delHid(btn.dataset.id)
+      if (btn.dataset.act === 'chk-hid')  abrirChecklist(btn.dataset.id)
     })
   })
 }
@@ -765,8 +767,116 @@ function renderRel() {
 }
 
 // ═══════════════════════════════════════
-// ADMIN
+// CHECKLIST HIDRANTE
 // ═══════════════════════════════════════
+let chkId = null
+
+function fdata(d) {
+  if (!d) return '—'
+  const [y,m,dd] = d.split('-')
+  return dd+'/'+m+'/'+y
+}
+
+function itemCor(v) {
+  if (!v || v === '—') return ''
+  if (v === 'Bom' || v === 'Presente' || v === 'Desobstruído') return 'color:var(--green);font-weight:700'
+  if (v === 'Regular') return 'color:var(--amber);font-weight:700'
+  if (v === 'Ruim' || v === 'Ausente' || v === 'Obstruído') return 'color:var(--red);font-weight:700'
+  return ''
+}
+
+function abrirChecklist(id) {
+  chkId = id
+  const h = HID.find(x => x.id === id); if (!h) return
+  document.getElementById('tit-chk').textContent = `📋 Checklist — ${h.num}`
+  document.getElementById('chk-resp').value = perfil?.nome || '—'
+
+  // Limpa campos
+  ;['chk-data','chk-mang1','chk-mang2','chk-chave','chk-esguicho',
+    'chk-abrigo','chk-registro','chk-lacre',
+    'chk-hid1-ult','chk-hid1-prox','chk-hid2-ult','chk-hid2-prox','chk-obs'
+  ].forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
+
+  // Define data de hoje
+  const hoje = new Date()
+  const pad = n => String(n).padStart(2,'0')
+  document.getElementById('chk-data').value =
+    hoje.getFullYear()+'-'+pad(hoje.getMonth()+1)+'-'+pad(hoje.getDate())
+
+  // Preenche com última inspeção se existir
+  const hist = Array.isArray(h.checklist) ? h.checklist : []
+  if (hist.length) {
+    const ult = hist[hist.length-1]
+    if (ult.hid1_ult)  document.getElementById('chk-hid1-ult').value  = ult.hid1_ult
+    if (ult.hid1_prox) document.getElementById('chk-hid1-prox').value = ult.hid1_prox
+    if (ult.hid2_ult)  document.getElementById('chk-hid2-ult').value  = ult.hid2_ult
+    if (ult.hid2_prox) document.getElementById('chk-hid2-prox').value = ult.hid2_prox
+  }
+
+  // Histórico
+  const histEl = document.getElementById('chk-hist')
+  if (hist.length) {
+    histEl.innerHTML = hist.slice().reverse().map(ins => `
+      <div style="border:1px solid var(--bdr);border-radius:9px;padding:10px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <b style="font-size:12px">📅 ${fdata(ins.data)}</b>
+          <span style="font-size:10px;color:var(--muted)">👤 ${ins.resp||'—'}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px">
+          <span>Mangueira 1: <b style="${itemCor(ins.mang1)}">${ins.mang1||'—'}</b></span>
+          <span>Mangueira 2: <b style="${itemCor(ins.mang2)}">${ins.mang2||'—'}</b></span>
+          <span>Chave: <b style="${itemCor(ins.chave)}">${ins.chave||'—'}</b></span>
+          <span>Esguicho: <b style="${itemCor(ins.esguicho)}">${ins.esguicho||'—'}</b></span>
+          <span>Abrigo: <b style="${itemCor(ins.abrigo)}">${ins.abrigo||'—'}</b></span>
+          <span>Registro: <b style="${itemCor(ins.registro)}">${ins.registro||'—'}</b></span>
+          <span>Lacre: <b style="${itemCor(ins.lacre)}">${ins.lacre||'—'}</b></span>
+        </div>
+        ${ins.hid1_ult ? `<div style="font-size:10px;color:var(--muted);margin-top:4px">Teste Hid. Mang.1: ${fdata(ins.hid1_ult)} → ${fdata(ins.hid1_prox)}</div>` : ''}
+        ${ins.hid2_ult ? `<div style="font-size:10px;color:var(--muted)">Teste Hid. Mang.2: ${fdata(ins.hid2_ult)} → ${fdata(ins.hid2_prox)}</div>` : ''}
+        ${ins.obs ? `<div style="font-size:11px;color:var(--ink2);margin-top:4px;font-style:italic">"${ins.obs}"</div>` : ''}
+      </div>`).join('')
+  } else {
+    histEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">Nenhuma inspeção anterior.</div>'
+  }
+
+  abrirOv('ov-chk')
+}
+
+document.getElementById('btn-salva-chk').addEventListener('click', async () => {
+  const h = HID.find(x => x.id === chkId); if (!h) return
+  const data = document.getElementById('chk-data').value
+  if (!data) { toast('⚠️ Informe a data da inspeção'); return }
+
+  const insp = {
+    data,
+    resp:      perfil?.nome || '—',
+    mang1:     document.getElementById('chk-mang1').value,
+    mang2:     document.getElementById('chk-mang2').value,
+    chave:     document.getElementById('chk-chave').value,
+    esguicho:  document.getElementById('chk-esguicho').value,
+    abrigo:    document.getElementById('chk-abrigo').value,
+    registro:  document.getElementById('chk-registro').value,
+    lacre:     document.getElementById('chk-lacre').value,
+    hid1_ult:  document.getElementById('chk-hid1-ult').value,
+    hid1_prox: document.getElementById('chk-hid1-prox').value,
+    hid2_ult:  document.getElementById('chk-hid2-ult').value,
+    hid2_prox: document.getElementById('chk-hid2-prox').value,
+    obs:       document.getElementById('chk-obs').value,
+    ts:        Date.now()
+  }
+
+  const hist = Array.isArray(h.checklist) ? [...h.checklist, insp] : [insp]
+
+  try {
+    await atualizarHidrante(chkId, {
+      checklist: hist,
+      upd_by: perfil?.nome || '—'
+    })
+    toast('✅ Checklist salvo!', 'ok')
+    fecharOv('ov-chk')
+    await carregarHid()
+  } catch(e) { toast('Erro: ' + e.message, 'err') }
+})
 async function renderAdm() {
   const el = document.getElementById('adm-body')
   if (!perfil || perfil.role !== 'admin') {

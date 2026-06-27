@@ -238,6 +238,88 @@
   </div>
 </div>
 
+<!-- ══ MODAL: CHECKLIST HIDRANTE ══ -->
+<div class="ov" id="ov-chk">
+  <div class="modal">
+    <div class="mh"><span>📋</span><h3 id="tit-chk">Checklist — Hidrante</h3><button class="mclose" data-close="ov-chk">✕</button></div>
+    <div class="mbody">
+
+      <div class="fsec">Data e Responsável</div>
+      <div class="g2">
+        <div class="mfg"><label>Data da Inspeção <span class="req">*</span></label><input id="chk-data" type="date"></div>
+        <div class="mfg"><label>Responsável</label><input id="chk-resp" readonly style="background:var(--bg)"></div>
+      </div>
+
+      <div class="fsec">Itens de Inspeção</div>
+
+      <div class="mfg"><label>Mangueira 1</label>
+        <select id="chk-mang1">
+          <option value="">Selecione…</option>
+          <option>Bom</option><option>Regular</option><option>Ruim</option><option>Ausente</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Mangueira 2</label>
+        <select id="chk-mang2">
+          <option value="">Selecione…</option>
+          <option>Bom</option><option>Regular</option><option>Ruim</option><option>Ausente</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Chave</label>
+        <select id="chk-chave">
+          <option value="">Selecione…</option>
+          <option>Presente</option><option>Ausente</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Esguicho</label>
+        <select id="chk-esguicho">
+          <option value="">Selecione…</option>
+          <option>Bom</option><option>Regular</option><option>Ruim</option><option>Ausente</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Abrigo / Caixa</label>
+        <select id="chk-abrigo">
+          <option value="">Selecione…</option>
+          <option>Bom</option><option>Regular</option><option>Ruim</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Registro</label>
+        <select id="chk-registro">
+          <option value="">Selecione…</option>
+          <option>Bom</option><option>Regular</option><option>Ruim</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Lacre</label>
+        <select id="chk-lacre">
+          <option value="">Selecione…</option>
+          <option>Presente</option><option>Ausente</option>
+        </select>
+      </div>
+
+      <div class="fsec">Teste Hidrostático das Mangueiras</div>
+      <div class="g2">
+        <div class="mfg"><label>Mangueira 1 — Último Teste</label><input id="chk-hid1-ult" type="date"></div>
+        <div class="mfg"><label>Mangueira 1 — Próximo Teste</label><input id="chk-hid1-prox" type="date"></div>
+      </div>
+      <div class="g2">
+        <div class="mfg"><label>Mangueira 2 — Último Teste</label><input id="chk-hid2-ult" type="date"></div>
+        <div class="mfg"><label>Mangueira 2 — Próximo Teste</label><input id="chk-hid2-prox" type="date"></div>
+      </div>
+
+      <div class="fsec">Observações</div>
+      <div class="mfg"><label>Obs.</label><textarea id="chk-obs" placeholder="Observações da inspeção…"></textarea></div>
+
+      <!-- Histórico de inspeções -->
+      <div class="fsec">Histórico de Inspeções</div>
+      <div id="chk-hist" style="font-size:12px;color:var(--muted)">Nenhuma inspeção anterior.</div>
+
+    </div>
+    <div class="mfoot">
+      <button class="btn bout bfull" data-close="ov-chk">Cancelar</button>
+      <button class="btn bblue bfull" id="btn-salva-chk">✅ Salvar Inspeção</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL: MANUTENÇÃO ══ -->
 <div class="ov center" id="ov-man">
   <div class="modal sm">
