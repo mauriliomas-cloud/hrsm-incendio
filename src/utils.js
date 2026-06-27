@@ -37,12 +37,25 @@ export function sortByNum(arr) {
 export function getStatus(ym, emManut) {
   if (emManut) return 'manut'
   if (!ym) return 'warn'
-  const [y, m] = ym.split('-').map(Number)
+  const parts = ym.split('-').map(Number)
   const now = new Date()
-  const diff = (y * 12 + (m - 1)) - (now.getFullYear() * 12 + now.getMonth())
-  if (diff < 0)  return 'danger'
-  if (diff <= 2) return 'warn'
-  return 'ok'
+  let diff
+  if (parts.length === 3) {
+    // Formato YYYY-MM-DD (data completa)
+    const dataAlvo = new Date(parts[0], parts[1]-1, parts[2])
+    const hoje = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    diff = Math.floor((dataAlvo - hoje) / (1000*60*60*24)) // diff em dias
+    if (diff < 0)   return 'danger'
+    if (diff <= 60) return 'warn'
+    return 'ok'
+  } else {
+    // Formato YYYY-MM (mês/ano)
+    const [y, m] = parts
+    diff = (y * 12 + (m - 1)) - (now.getFullYear() * 12 + now.getMonth())
+    if (diff < 0)  return 'danger'
+    if (diff <= 2) return 'warn'
+    return 'ok'
+  }
 }
 
 /** Badge HTML de status */

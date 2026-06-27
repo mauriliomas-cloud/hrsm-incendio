@@ -181,7 +181,15 @@ function renderExt() {
     if (mk  && e.mk !== mk)   return false
     return true
   })
-  document.getElementById('cnt-ext').textContent = data.length
+  const temFiltro = q || cls || sts || mk
+  const cnt = document.getElementById('cnt-ext')
+  if (temFiltro) {
+    cnt.textContent = data.length + ' de ' + EXT.length
+    cnt.style.background = data.length < EXT.length ? 'var(--blue)' : ''
+  } else {
+    cnt.textContent = data.length
+    cnt.style.background = ''
+  }
   stExt()
   const el = document.getElementById('list-ext')
   if (!data.length) {
@@ -251,7 +259,15 @@ function renderHid() {
     if (sts && s   !== sts) return false
     return true
   })
-  document.getElementById('cnt-hid').textContent = data.length
+  const temFiltroH = q || tp || sts
+  const cntH = document.getElementById('cnt-hid')
+  if (temFiltroH) {
+    cntH.textContent = data.length + ' de ' + HID.length
+    cntH.style.background = data.length < HID.length ? 'var(--blue)' : ''
+  } else {
+    cntH.textContent = data.length
+    cntH.style.background = ''
+  }
   stHid()
   const el = document.getElementById('list-hid')
   if (!data.length) {
