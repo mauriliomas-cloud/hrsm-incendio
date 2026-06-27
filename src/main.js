@@ -946,8 +946,27 @@ function gerarRelatorioChecklist(h) {
 }
 
 document.getElementById('btn-salva-chk').addEventListener('click', async () => {
+  const h = HID.find(x => x.id === chkId)
+  if (!h) return
+
   const data = document.getElementById('chk-data').value
   if (!data) { toast('⚠️ Informe a data da inspeção'); return }
+
+  // Verifica se pelo menos um item foi preenchido
+  const itens = [
+    document.getElementById('chk-mang1').value,
+    document.getElementById('chk-mang2').value,
+    document.getElementById('chk-chave').value,
+    document.getElementById('chk-esguicho').value,
+    document.getElementById('chk-abrigo').value,
+    document.getElementById('chk-registro').value,
+    document.getElementById('chk-lacre').value,
+  ]
+  const algumPreenchido = itens.some(v => v && v !== '')
+  if (!algumPreenchido) {
+    toast('⚠️ Preencha pelo menos um item do checklist')
+    return
+  }
 
   const insp = {
     data,
