@@ -195,7 +195,7 @@ function renderExt() {
       ? `<button class="bmr" data-id="${e.id}" data-act="ret">✅ Retornou</button>`
       : `<button class="bmo" data-id="${e.id}" data-act="man">🔧 Manutenção</button>`
     const delBtn = isAdmin ? `<button class="bd" data-id="${e.id}" data-act="del-ext">🗑️</button>` : ''
-    const fotoHtml = e.foto_url ? `<img src="${e.foto_url}" style="width:100%;border-radius:10px;max-height:180px;object-fit:cover;margin-bottom:8px">` : ''
+    const fotoHtml = e.foto_url ? `<button class="btn bout bsm" style="margin-bottom:8px;font-size:11px" onclick="verFoto('${e.foto_url}','${e.num}')">📷 Ver Foto</button>` : ''
     return `<div class="card ${s}">
       ${fotoHtml}
       <div class="chead">
@@ -261,7 +261,7 @@ function renderHid() {
   const isAdminH = perfil?.role === 'admin'
   el.innerHTML = data.map(h => {
     const s = getStatus(h.pi, false)
-    const fotoHtml = h.foto_url ? `<img src="${h.foto_url}" style="width:100%;border-radius:10px;max-height:180px;object-fit:cover;margin-bottom:8px">` : ''
+    const fotoHtml = h.foto_url ? `<button class="btn bout bsm" style="margin-bottom:8px;font-size:11px" onclick="verFoto('${h.foto_url}','${h.num}')">📷 Ver Foto</button>` : ''
     const delBtn = isAdminH ? `<button class="bd" data-id="${h.id}" data-act="del-hid">🗑️ Excluir</button>` : ''
     return `<div class="card ${s}">
       ${fotoHtml}
@@ -822,3 +822,27 @@ document.querySelectorAll('.ov').forEach(o => {
 window.filtrarSetor = filtrarSetor
 window.previewFoto  = previewFoto
 window.toggleAndar  = toggleAndar
+window.verFoto      = verFoto
+
+function verFoto(url, titulo) {
+  // Cria modal de foto dinamicamente
+  let ov = document.getElementById('ov-foto')
+  if (!ov) {
+    ov = document.createElement('div')
+    ov.id = 'ov-foto'
+    ov.className = 'ov center'
+    ov.innerHTML = `<div class="modal sm" style="padding:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <b id="foto-titulo" style="flex:1;font-size:15px"></b>
+        <button onclick="document.getElementById('ov-foto').classList.remove('on')" 
+          style="border:none;background:var(--bg);border-radius:7px;width:34px;height:34px;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <img id="foto-img" style="width:100%;border-radius:10px;max-height:70vh;object-fit:contain">
+    </div>`
+    ov.addEventListener('click', function(e){ if(e.target===ov) ov.classList.remove('on') })
+    document.body.appendChild(ov)
+  }
+  document.getElementById('foto-titulo').textContent = titulo
+  document.getElementById('foto-img').src = url
+  ov.classList.add('on')
+}
