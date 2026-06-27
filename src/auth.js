@@ -36,35 +36,27 @@ export async function getMeuPerfil() {
   return { ...data, email: user.email }
 }
 
-/** Admin: cria usuário via REST API do Supabase */
+/** Admin: cria usuário via Edge Function */
 export async function criarUsuario(email, senha, nome, role) {
   const SUPABASE_URL      = import.meta.env.VITE_SUPABASE_URL
   const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-  // Cria usuário usando endpoint de signup sem sessão
-  const resp = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+  // Pega o token da sessão atual
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('Não autorizado')
+
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/hyper-handler`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'apikey': SUPABASE_ANON_KEY
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${session.access_token}`
     },
-    body: JSON.stringify({
-      email,
-      password: senha,
-      data: { nome, role }
-    })
+    body: JSON.stringify({ email, senha, nome, role })
   })
 
   const data = await resp.json()
-  if (data.error || data.msg || !data.id) {
-    throw new Error(data.error_description || data.msg || data.message || 'Erro ao criar usuário')
-  }
-
-  // Salva perfil
-  await supabase
-    .from('perfis')
-    .upsert({ id: data.id, nome, role, primeiro_acesso: true })
-
+  if (data.error) throw new Error(data.error)
   return data
 }
 
