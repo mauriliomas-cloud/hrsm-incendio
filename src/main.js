@@ -944,7 +944,8 @@ function gerarRelatorioChecklist(h) {
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 1500)
   toast('📄 Relatório gerado!', 'ok')
 }
-  const h = HID.find(x => x.id === chkId); if (!h) return
+
+document.getElementById('btn-salva-chk').addEventListener('click', async () => {
   const data = document.getElementById('chk-data').value
   if (!data) { toast('⚠️ Informe a data da inspeção'); return }
 
@@ -978,6 +979,10 @@ function gerarRelatorioChecklist(h) {
     await carregarHid()
   } catch(e) { toast('Erro: ' + e.message, 'err') }
 })
+
+// ═══════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════
 async function renderAdm() {
   const el = document.getElementById('adm-body')
   if (!perfil || perfil.role !== 'admin') {
