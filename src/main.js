@@ -475,6 +475,11 @@ document.getElementById('btn-salva-ext').addEventListener('click', async () => {
   const setor = document.getElementById('ef-setor').value
   const loc   = montarLocal('ext')
   if (!num||!cls||!setor||!val) { toast('⚠️ Preencha os campos obrigatórios'); return }
+
+  // Verifica número duplicado
+  const duplicado = EXT.find(e => e.num.trim().toLowerCase() === num.toLowerCase() && e.id !== editExtId)
+  if (duplicado) { toast('⚠️ Já existe um extintor com o número ' + num); return }
+
   const payload = {
     num, cls, loc, validade: val,
     cap: gv('ef-cap'), mk: gv('ef-mk'), descricao: gv('ef-desc'),
@@ -537,7 +542,7 @@ function abrirMan(id, modo) {
   if (modo === 'said') {
     document.getElementById('tit-man').textContent = `🔧 Manutenção — ${e.num}`
     body.innerHTML = `
-      <div class="mfg"><label>Data de Saída</label><input id="mf-said" type="month"></div>
+      <div class="mfg"><label>Data de Saída</label><input id="mf-said" type="date"></div>
       <div class="mfg"><label>Motivo / Empresa</label><textarea id="mf-mot" placeholder="Ex: Recarga — Extinfor LTDA"></textarea></div>`
     foot.innerHTML = `
       <button class="btn bout bfull" onclick="document.getElementById('ov-man').classList.remove('on')">Cancelar</button>
@@ -545,7 +550,7 @@ function abrirMan(id, modo) {
   } else {
     document.getElementById('tit-man').textContent = `✅ Retorno — ${e.num}`
     body.innerHTML = `
-      <div class="mfg"><label>Data de Retorno</label><input id="mf-ret" type="month"></div>
+      <div class="mfg"><label>Data de Retorno</label><input id="mf-ret" type="date"></div>
       <div class="mfg"><label>Serviços realizados</label><textarea id="mf-obs" placeholder="Recarga, teste…"></textarea></div>`
     foot.innerHTML = `
       <button class="btn bout bfull" onclick="document.getElementById('ov-man').classList.remove('on')">Cancelar</button>
@@ -589,6 +594,11 @@ document.getElementById('btn-salva-hid').addEventListener('click', async () => {
   const setor = document.getElementById('hf-setor').value
   const loc   = montarLocal('hid')
   if (!num||!tp||!setor||!pi) { toast('⚠️ Preencha os campos obrigatórios'); return }
+
+  // Verifica número duplicado
+  const duplicadoH = HID.find(h => h.num.trim().toLowerCase() === num.toLowerCase() && h.id !== editHidId)
+  if (duplicadoH) { toast('⚠️ Já existe um hidrante com o número ' + num); return }
+
   const payload = {
     num, tp, loc, pi,
     mk:gv('hf-mk'), dm:gv('hf-dm'), descricao:gv('hf-desc'),
