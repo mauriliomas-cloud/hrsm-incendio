@@ -62,11 +62,13 @@ async function iniciarApp() {
     document.getElementById('nb-adm').style.display = isAdmin ? 'flex' : 'none'
     document.getElementById('um-adm').style.display  = isAdmin ? 'block' : 'none'
 
-    // Carrega dados
+    // Verifica primeiro acesso
+    if (perfil?.primeiro_acesso) {
+      document.getElementById('ov-senha').classList.add('on')
+    }
+
     await Promise.all([carregarExt(), carregarHid()])
     irPg('ext')
-
-    // Realtime
     escutarExtintores(() => carregarExt())
     escutarHidrantes( () => carregarHid())
   } catch (e) {
@@ -186,12 +188,16 @@ function renderExt() {
     el.innerHTML = '<div class="empty"><div class="ei">🧯</div><p>Nenhum extintor encontrado.</p></div>'
     return
   }
+  const isAdmin = perfil?.role === 'admin'
   el.innerHTML = data.map(e => {
     const s = getStatus(e.validade, e.em_manut)
     const manBtn = e.em_manut
       ? `<button class="bmr" data-id="${e.id}" data-act="ret">✅ Retornou</button>`
       : `<button class="bmo" data-id="${e.id}" data-act="man">🔧 Manutenção</button>`
+    const delBtn = isAdmin ? `<button class="bd" data-id="${e.id}" data-act="del-ext">🗑️</button>` : ''
+    const fotoHtml = e.foto_url ? `<img src="${e.foto_url}" style="width:100%;border-radius:10px;max-height:180px;object-fit:cover;margin-bottom:8px">` : ''
     return `<div class="card ${s}">
+      ${fotoHtml}
       <div class="chead">
         <div>
           <div class="cnum">${e.num}</div>
@@ -213,7 +219,7 @@ function renderExt() {
       <div class="cact">
         <button class="be" data-id="${e.id}" data-act="edit-ext">✏️ Editar</button>
         ${manBtn}
-        <button class="bd" data-id="${e.id}" data-act="del-ext">🗑️</button>
+        ${delBtn}
       </div>
     </div>`
   }).join('')
@@ -252,9 +258,13 @@ function renderHid() {
     el.innerHTML = '<div class="empty"><div class="ei">💧</div><p>Nenhum hidrante encontrado.</p></div>'
     return
   }
+  const isAdminH = perfil?.role === 'admin'
   el.innerHTML = data.map(h => {
     const s = getStatus(h.pi, false)
+    const fotoHtml = h.foto_url ? `<img src="${h.foto_url}" style="width:100%;border-radius:10px;max-height:180px;object-fit:cover;margin-bottom:8px">` : ''
+    const delBtn = isAdminH ? `<button class="bd" data-id="${h.id}" data-act="del-hid">🗑️ Excluir</button>` : ''
     return `<div class="card ${s}">
+      ${fotoHtml}
       <div class="chead"><div class="cnum">${h.num}</div><div class="cbadges">${stBadge(s)}</div></div>
       <div class="cbody">
         <div class="cf"><div class="fl">Tipo</div><div class="fv">${h.tp}</div></div>
@@ -269,7 +279,7 @@ function renderHid() {
       <div class="cupd"><span>👤 ${h.upd_by||'—'}</span><span>🕐 ${fdt(h.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${h.id}" data-act="edit-hid">✏️ Editar</button>
-        <button class="bd" data-id="${h.id}" data-act="del-hid">🗑️ Excluir</button>
+        ${delBtn}
       </div>
     </div>`
   }).join('')
@@ -288,21 +298,170 @@ function renderHid() {
 function gv(id) { return document.getElementById(id)?.value || '' }
 function sv(id, v) { const el = document.getElementById(id); if(el) el.value = v || '' }
 
-// Setores que ficam dentro do prédio (precisam de andar)
-const SETORES_PREDIO = [
-  'Corredor AB','Corredor BC','Corredor Norte','Corredor Sul',
+// ═══════════════════════════════════════
+// LOCAIS POR ANDAR
+// ═══════════════════════════════════════
+const LOCAIS = {
+  terreo: [
+    'Almoxarifado','Anatomia','APC','Auditório','Banco de Leite','Banco de Sangue',
+    'Centro Cirúrgico Externo','Centro Cirúrgico Interno',
+    'Centro Obstétrico Externo','Centro Obstétrico Interno',
+    'CME Externo','CME Interno','Copa — Centro Cirúrgico','Copa dos Vigilantes',
+    'Corredor Central','Corredor da Administração',
+    'Corredor — Fisioterapia e Anatomia',
+    'Corredor — Pronto-Socorro Infantil','Corredor — Pronto-Socorro / Triagem',
+    'Espaço Lúdico','Farmácia','Fisioterapia',
+    'Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C',
+    'Hotelaria','Laboratório','Núcleo de Mobilidade (NUMOB)',
+    'Observação Feminina — Pronto-Socorro','Observação Masculina — Pronto-Socorro',
+    'Recepção — Ambulatório','Recepção — Pronto-Socorro',
+    'Refeitório','Salão do Auditório','UTI Neonatal'
+  ],
+  andar: [
+    'Corredor Sul','Corredor AB','Corredor BC','Corredor Norte',
+    'Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C'
+  ],
+  torre: ['Torre A','Torre B','Torre C'],
+  mezanino: ['Ala Norte','Ala Sul'],
+  externa: [
+    'Anexo','Área de Gases — Oxigênio','Caldeira Interna','Depósito',
+    'Guarita — Área de Gases','Guarita — Portaria Central','Guarita — Pronto-Socorro',
+    'Heliponto','Pátio — Frente da Caldeira','Resíduos Sólidos'
+  ]
+}
+
+function filtrarSetor(tipo) {
+  const prefix = tipo === 'ext' ? 'ef' : 'hf'
+  const andar  = document.getElementById(prefix+'-andar').value
+  const sel    = document.getElementById(prefix+'-setor')
+  sel.innerHTML = '<option value="">— Selecione o Setor —</option>'
+
+  let lista = []
+  if (andar === 'terreo') lista = LOCAIS.terreo
+  else if (['1andar','2andar','3andar','4andar','5andar'].includes(andar)) lista = LOCAIS.andar
+  else if (andar === 'torre')    lista = LOCAIS.torre
+  else if (andar === 'mezanino') lista = LOCAIS.mezanino
+  else if (andar === 'externa')  lista = LOCAIS.externa
+
+  // Admin pode adicionar "Outro"
+  lista.forEach(function(s){ sel.innerHTML += '<option>'+s+'</option>' })
+  if (perfil && perfil.role === 'admin') {
+    sel.innerHTML += '<option value="outro">— Outro (digitar) —</option>'
+  }
+
+  sel.onchange = function() {
+    const outroDiv = document.getElementById(prefix+'-outro-div')
+    if (sel.value === 'outro') {
+      if (!outroDiv) {
+        const div = document.createElement('div')
+        div.className = 'mfg'
+        div.id = prefix+'-outro-div'
+        div.innerHTML = '<label>Digite o local</label><input id="'+prefix+'-outro-input" placeholder="Nome do local...">'
+        sel.parentNode.after(div)
+      }
+    } else {
+      if (outroDiv) outroDiv.remove()
+    }
+  }
+}
+
+function montarLocal(tipo) {
+  const prefix = tipo === 'ext' ? 'ef' : 'hf'
+  const andar  = document.getElementById(prefix+'-andar').value
+  const setor  = document.getElementById(prefix+'-setor').value
+  const andares = {'terreo':'Térreo','1andar':'1º Andar','2andar':'2º Andar',
+    '3andar':'3º Andar','4andar':'4º Andar','5andar':'5º Andar',
+    'torre':'Torre','mezanino':'Mezanino','externa':'Área Externa'}
+
+  let setorFinal = setor
+  if (setor === 'outro') {
+    const inp = document.getElementById(prefix+'-outro-input')
+    setorFinal = inp ? inp.value.trim() : ''
+  }
+  if (!setorFinal) return ''
+  const andarLabel = andares[andar] || ''
+  return andarLabel ? andarLabel + ' — ' + setorFinal : setorFinal
+}
+
+// ═══════════════════════════════════════
+// TROCA DE SENHA NO PRIMEIRO ACESSO
+// ═══════════════════════════════════════
+document.getElementById('btn-salva-senha').addEventListener('click', async () => {
+  const senha = document.getElementById('ns-senha').value
+  const conf  = document.getElementById('ns-conf').value
+  const err   = document.getElementById('ns-err')
+  if (!senha || senha.length < 6) { err.textContent = 'Mínimo 6 caracteres.'; return }
+  if (senha !== conf) { err.textContent = 'As senhas não coincidem.'; return }
+  try {
+    await supabase.auth.updateUser({ password: senha })
+    await supabase.from('perfis').update({ primeiro_acesso: false }).eq('id', perfil.id)
+    perfil.primeiro_acesso = false
+    document.getElementById('ov-senha').classList.remove('on')
+    toast('✅ Senha atualizada com sucesso!', 'ok')
+  } catch(e) { err.textContent = 'Erro: ' + e.message }
+})
+
+// ═══════════════════════════════════════
+// PREVIEW E UPLOAD DE FOTO
+// ═══════════════════════════════════════
+function previewFoto(tipo) {
+  const prefix = tipo === 'ext' ? 'ef' : 'hf'
+  const file   = document.getElementById(prefix+'-foto').files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = function(e) {
+    document.getElementById(prefix+'-foto-img').src = e.target.result
+    document.getElementById(prefix+'-foto-preview').style.display = 'block'
+  }
+  reader.readAsDataURL(file)
+}
+
+async function uploadFoto(tipo, id) {
+  const prefix = tipo === 'ext' ? 'ef' : 'hf'
+  const file   = document.getElementById(prefix+'-foto').files[0]
+  if (!file) return null
+  const ext  = file.name.split('.').pop()
+  const path = tipo + '/' + id + '.' + ext
+  const { error } = await supabase.storage.from('fotos').upload(path, file, { upsert: true })
+  if (error) throw error
+  const { data } = supabase.storage.from('fotos').getPublicUrl(path)
+  return data.publicUrl
+}
+
+// Setores dentro do prédio (para reconstituir andar/setor ao editar)
+const SETORES_PREDIO = ['terreo','andar','torre','mezanino','externa']
+const ANDAR_MAP = {
+  'Térreo':'terreo','1º Andar':'1andar','2º Andar':'2andar',
+  '3º Andar':'3andar','4º Andar':'4andar','5º Andar':'5andar',
+  'Torre':'torre','Mezanino':'mezanino','Área Externa':'externa'
+}
+
+function separarLocal(loc) {
+  if (!loc) return { andar: '', setor: '' }
+  const andares = Object.keys(ANDAR_MAP)
+  for (let i = 0; i < andares.length; i++) {
+    const a = andares[i]
+    if (loc.startsWith(a + ' — ')) {
+      return { andar: ANDAR_MAP[a], setor: loc.replace(a + ' — ', '') }
+    }
+  }
+  // Tenta encontrar setor na lista
+  for (const key in LOCAIS) {
+    if (LOCAIS[key].includes(loc)) {
+      if (key === 'andar') return { andar: '1andar', setor: loc }
+      return { andar: key, setor: loc }
+    }
+  }
+  return { andar: 'externa', setor: loc }
+}
+
+// Setores dentro do prédio
+const SETORES_PREDIO_LIST = [
+  'Corredor Sul','Corredor AB','Corredor BC','Corredor Norte',
   'Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C'
 ]
 
-function toggleAndar(tipo) {
-  // Não faz nada por enquanto — andar é sempre opcional
-}
-
-function montarLocal(andar, setor) {
-  if (!setor) return ''
-  if (andar && SETORES_PREDIO.includes(setor)) return andar + ' — ' + setor
-  return setor
-}
+function toggleAndar() {} // compatibilidade
 
 function abrirExt() {
   editExtId = null
@@ -313,8 +472,8 @@ function abrirExt() {
 
 document.getElementById('btn-salva-ext').addEventListener('click', async () => {
   const num   = gv('ef-num').trim(), cls = gv('ef-cls'), val = gv('ef-val')
-  const andar = gv('ef-andar'), setor = gv('ef-setor')
-  const loc   = montarLocal(andar, setor)
+  const setor = document.getElementById('ef-setor').value
+  const loc   = montarLocal('ext')
   if (!num||!cls||!setor||!val) { toast('⚠️ Preencha os campos obrigatórios'); return }
   const payload = {
     num, cls, loc, validade: val,
@@ -323,23 +482,18 @@ document.getElementById('btn-salva-ext').addEventListener('click', async () => {
     upd_by: perfil?.nome || '—'
   }
   try {
+    let saved
     if (editExtId) {
-      // Mantém campos de manutenção
-      const old = EXT.find(e => e.id === editExtId)
-      await atualizarExtintor(editExtId, {
-        ...payload,
-        em_manut: old?.em_manut || false,
-        manut_saida: old?.manut_saida || null,
-        manut_motivo: old?.manut_motivo || null,
-        manut_hist: old?.manut_hist || []
-      })
+      saved = await atualizarExtintor(editExtId, payload)
       toast('✅ Extintor atualizado!', 'ok')
     } else {
-      await inserirExtintor({ ...payload, em_manut: false, manut_hist: [] })
+      saved = await inserirExtintor({ ...payload, em_manut: false, manut_hist: [] })
       toast('✅ Extintor cadastrado!', 'ok')
     }
-    fecharOv('ov-ext')
-    await carregarExt()
+    // Upload da foto se selecionada
+    const fotoUrl = await uploadFoto('ext', saved.id)
+    if (fotoUrl) await atualizarExtintor(saved.id, { foto_url: fotoUrl })
+    fecharOv('ov-ext'); await carregarExt()
   } catch(e) { toast('Erro: ' + e.message, 'err') }
 })
 
@@ -348,18 +502,19 @@ function editExt(id) {
   editExtId = id
   document.getElementById('tit-ext').textContent = 'Editar Extintor'
   sv('ef-num', e.num); sv('ef-cls', e.cls); sv('ef-cap', e.cap); sv('ef-mk', e.mk)
-  // Tenta separar andar e setor do local salvo
-  const partes = (e.loc || '').split(' — ')
-  const andares = ['Térreo','1º Andar','2º Andar','3º Andar','4º Andar','5º Andar']
-  if (partes.length >= 2 && andares.includes(partes[0])) {
-    sv('ef-andar', partes[0])
-    sv('ef-setor', partes.slice(1).join(' — '))
-  } else {
-    sv('ef-andar', '')
-    sv('ef-setor', e.loc || '')
-  }
+  const loc = separarLocal(e.loc)
+  sv('ef-andar', loc.andar)
+  filtrarSetor('ext')
+  setTimeout(function(){ sv('ef-setor', loc.setor) }, 50)
   sv('ef-desc', e.descricao); sv('ef-val', e.validade)
   sv('ef-troca', e.troca); sv('ef-hdt', e.hdt); sv('ef-hnum', e.hnum); sv('ef-obs', e.obs)
+  // Mostra foto existente
+  if (e.foto_url) {
+    document.getElementById('ef-foto-img').src = e.foto_url
+    document.getElementById('ef-foto-preview').style.display = 'block'
+  } else {
+    document.getElementById('ef-foto-preview').style.display = 'none'
+  }
   abrirOv('ov-ext')
 }
 
@@ -431,8 +586,8 @@ function abrirHid() {
 
 document.getElementById('btn-salva-hid').addEventListener('click', async () => {
   const num   = gv('hf-num').trim(), tp = gv('hf-tp'), pi = gv('hf-pi')
-  const andar = gv('hf-andar'), setor = gv('hf-setor')
-  const loc   = montarLocal(andar, setor)
+  const setor = document.getElementById('hf-setor').value
+  const loc   = montarLocal('hid')
   if (!num||!tp||!setor||!pi) { toast('⚠️ Preencha os campos obrigatórios'); return }
   const payload = {
     num, tp, loc, pi,
@@ -441,8 +596,11 @@ document.getElementById('btn-salva-hid').addEventListener('click', async () => {
     upd_by: perfil?.nome || '—'
   }
   try {
-    if (editHidId) { await atualizarHidrante(editHidId, payload); toast('✅ Hidrante atualizado!', 'ok') }
-    else           { await inserirHidrante(payload);                toast('✅ Hidrante cadastrado!', 'ok') }
+    let saved
+    if (editHidId) { saved = await atualizarHidrante(editHidId, payload); toast('✅ Hidrante atualizado!', 'ok') }
+    else           { saved = await inserirHidrante(payload);               toast('✅ Hidrante cadastrado!', 'ok') }
+    const fotoUrl = await uploadFoto('hid', saved.id)
+    if (fotoUrl) await atualizarHidrante(saved.id, { foto_url: fotoUrl })
     fecharOv('ov-hid'); await carregarHid()
   } catch(e) { toast('Erro: ' + e.message, 'err') }
 })
@@ -452,18 +610,19 @@ function editHid(id) {
   editHidId = id
   document.getElementById('tit-hid').textContent = 'Editar Hidrante'
   sv('hf-num',h.num); sv('hf-tp',h.tp); sv('hf-mk',h.mk); sv('hf-dm',h.dm)
-  // Tenta separar andar e setor do local salvo
-  const partes = (h.loc || '').split(' — ')
-  const andares = ['Térreo','1º Andar','2º Andar','3º Andar','4º Andar','5º Andar']
-  if (partes.length >= 2 && andares.includes(partes[0])) {
-    sv('hf-andar', partes[0])
-    sv('hf-setor', partes.slice(1).join(' — '))
-  } else {
-    sv('hf-andar', '')
-    sv('hf-setor', h.loc || '')
-  }
+  const loc = separarLocal(h.loc)
+  sv('hf-andar', loc.andar)
+  filtrarSetor('hid')
+  setTimeout(function(){ sv('hf-setor', loc.setor) }, 50)
   sv('hf-desc',h.descricao); sv('hf-ui',h.ui)
   sv('hf-pi',h.pi); sv('hf-pt',h.pt); sv('hf-pv',h.pv); sv('hf-obs',h.obs)
+  // Mostra foto existente
+  if (h.foto_url) {
+    document.getElementById('hf-foto-img').src = h.foto_url
+    document.getElementById('hf-foto-preview').style.display = 'block'
+  } else {
+    document.getElementById('hf-foto-preview').style.display = 'none'
+  }
   abrirOv('ov-hid')
 }
 

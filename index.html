@@ -128,74 +128,23 @@
         <div class="mfg"><label>Marca</label><input id="ef-mk" placeholder="Kidde"></div>
       </div>
       <div class="fsec">Localização</div>
-      <div class="mfg"><label>Andar</label>
-        <select id="ef-andar" onchange="toggleAndar('ext')">
-          <option value="">— Selecione o Andar —</option>
-          <option>Térreo</option>
-          <option>1º Andar</option>
-          <option>2º Andar</option>
-          <option>3º Andar</option>
-          <option>4º Andar</option>
-          <option>5º Andar</option>
+      <div class="mfg"><label>Andar / Área</label>
+        <select id="ef-andar" onchange="filtrarSetor('ext')">
+          <option value="">— Selecione —</option>
+          <option value="terreo">Térreo</option>
+          <option value="1andar">1º Andar</option>
+          <option value="2andar">2º Andar</option>
+          <option value="3andar">3º Andar</option>
+          <option value="4andar">4º Andar</option>
+          <option value="5andar">5º Andar</option>
+          <option value="torre">Torre</option>
+          <option value="mezanino">Mezanino</option>
+          <option value="externa">Área Externa</option>
         </select>
       </div>
       <div class="mfg"><label>Setor <span class="req">*</span></label>
         <select id="ef-setor">
-          <option value="">— Selecione o Setor —</option>
-          <optgroup label="🏢 Dentro do Prédio">
-            <option>Corredor AB</option>
-            <option>Corredor BC</option>
-            <option>Corredor Norte</option>
-            <option>Corredor Sul</option>
-            <option>Hall Elevador — Bloco A</option>
-            <option>Hall Elevador — Bloco B</option>
-            <option>Hall Elevador — Bloco C</option>
-          </optgroup>
-          <optgroup label="🏥 Setores Especiais">
-            <option>Almoxarifado</option>
-            <option>Anatomia</option>
-            <option>Anexo</option>
-            <option>APC</option>
-            <option>Área de Gases — Oxigênio</option>
-            <option>Auditório</option>
-            <option>Banco de Leite</option>
-            <option>Banco de Sangue</option>
-            <option>Caldeira Interna</option>
-            <option>Casa de Máquinas — Torre A</option>
-            <option>Casa de Máquinas — Torre B</option>
-            <option>Casa de Máquinas — Torre C</option>
-            <option>Centro Cirúrgico Externo</option>
-            <option>Centro Cirúrgico Interno</option>
-            <option>Centro Obstétrico Externo</option>
-            <option>Centro Obstétrico Interno</option>
-            <option>CME Externo</option>
-            <option>CME Interno</option>
-            <option>Copa — Centro Cirúrgico</option>
-            <option>Copa dos Vigilantes</option>
-            <option>Corredor — Fisioterapia</option>
-            <option>Corredor — Pronto-Socorro Infantil</option>
-            <option>Corredor — Pronto-Socorro / Triagem</option>
-            <option>Depósito</option>
-            <option>Depósito de Limpeza</option>
-            <option>Espaço Lúdico</option>
-            <option>Farmácia</option>
-            <option>Fisioterapia</option>
-            <option>Guarita — Área de Gases</option>
-            <option>Guarita — Portaria Central</option>
-            <option>Guarita — Pronto-Socorro</option>
-            <option>Hotelaria</option>
-            <option>Mezanino — Ala Norte</option>
-            <option>Mezanino — Ala Sul</option>
-            <option>Núcleo de Mobilidade (NUMOB)</option>
-            <option>Observação Feminina — Pronto-Socorro</option>
-            <option>Observação Masculina — Pronto-Socorro</option>
-            <option>Pátio — Frente da Caldeira</option>
-            <option>Recepção — Ambulatório</option>
-            <option>Recepção — Pronto-Socorro</option>
-            <option>Refeitório</option>
-            <option>Resíduos Sólidos</option>
-            <option>Salão do Auditório</option>
-          </optgroup>
+          <option value="">— Selecione o Andar primeiro —</option>
         </select>
       </div>
       <div class="mfg"><label>Referência / Descrição</label><textarea id="ef-desc" placeholder="Ex: próximo à porta, lado direito…"></textarea></div>
@@ -207,6 +156,14 @@
       <div class="g2">
         <div class="mfg"><label>Ano Hidrostático</label><input id="ef-hdt" type="number" min="2000" max="2099" placeholder="2024"></div>
         <div class="mfg"><label>Nº Hidrostático</label><input id="ef-hnum" placeholder="TH-2024-001"></div>
+      </div>
+      <div class="fsec">Foto</div>
+      <div class="mfg"><label>Foto do Extintor</label>
+        <div id="ef-foto-preview" style="display:none;margin-bottom:8px">
+          <img id="ef-foto-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
+        </div>
+        <input type="file" id="ef-foto" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('ext')">
+        <button type="button" class="btn bout bfull" onclick="document.getElementById('ef-foto').click()">📷 Tirar/Escolher Foto</button>
       </div>
       <div class="fsec">Observações</div>
       <div class="mfg"><label>Obs.</label><textarea id="ef-obs"></textarea></div>
@@ -234,74 +191,23 @@
         <div class="mfg"><label>Diâmetro</label><input id="hf-dm" placeholder="63 mm"></div>
       </div>
       <div class="fsec">Localização</div>
-      <div class="mfg"><label>Andar</label>
-        <select id="hf-andar" onchange="toggleAndar('hid')">
-          <option value="">— Selecione o Andar —</option>
-          <option>Térreo</option>
-          <option>1º Andar</option>
-          <option>2º Andar</option>
-          <option>3º Andar</option>
-          <option>4º Andar</option>
-          <option>5º Andar</option>
+      <div class="mfg"><label>Andar / Área</label>
+        <select id="hf-andar" onchange="filtrarSetor('hid')">
+          <option value="">— Selecione —</option>
+          <option value="terreo">Térreo</option>
+          <option value="1andar">1º Andar</option>
+          <option value="2andar">2º Andar</option>
+          <option value="3andar">3º Andar</option>
+          <option value="4andar">4º Andar</option>
+          <option value="5andar">5º Andar</option>
+          <option value="torre">Torre</option>
+          <option value="mezanino">Mezanino</option>
+          <option value="externa">Área Externa</option>
         </select>
       </div>
       <div class="mfg"><label>Setor <span class="req">*</span></label>
         <select id="hf-setor">
-          <option value="">— Selecione o Setor —</option>
-          <optgroup label="🏢 Dentro do Prédio">
-            <option>Corredor AB</option>
-            <option>Corredor BC</option>
-            <option>Corredor Norte</option>
-            <option>Corredor Sul</option>
-            <option>Hall Elevador — Bloco A</option>
-            <option>Hall Elevador — Bloco B</option>
-            <option>Hall Elevador — Bloco C</option>
-          </optgroup>
-          <optgroup label="🏥 Setores Especiais">
-            <option>Almoxarifado</option>
-            <option>Anatomia</option>
-            <option>Anexo</option>
-            <option>APC</option>
-            <option>Área de Gases — Oxigênio</option>
-            <option>Auditório</option>
-            <option>Banco de Leite</option>
-            <option>Banco de Sangue</option>
-            <option>Caldeira Interna</option>
-            <option>Casa de Máquinas — Torre A</option>
-            <option>Casa de Máquinas — Torre B</option>
-            <option>Casa de Máquinas — Torre C</option>
-            <option>Centro Cirúrgico Externo</option>
-            <option>Centro Cirúrgico Interno</option>
-            <option>Centro Obstétrico Externo</option>
-            <option>Centro Obstétrico Interno</option>
-            <option>CME Externo</option>
-            <option>CME Interno</option>
-            <option>Copa — Centro Cirúrgico</option>
-            <option>Copa dos Vigilantes</option>
-            <option>Corredor — Fisioterapia</option>
-            <option>Corredor — Pronto-Socorro Infantil</option>
-            <option>Corredor — Pronto-Socorro / Triagem</option>
-            <option>Depósito</option>
-            <option>Depósito de Limpeza</option>
-            <option>Espaço Lúdico</option>
-            <option>Farmácia</option>
-            <option>Fisioterapia</option>
-            <option>Guarita — Área de Gases</option>
-            <option>Guarita — Portaria Central</option>
-            <option>Guarita — Pronto-Socorro</option>
-            <option>Hotelaria</option>
-            <option>Mezanino — Ala Norte</option>
-            <option>Mezanino — Ala Sul</option>
-            <option>Núcleo de Mobilidade (NUMOB)</option>
-            <option>Observação Feminina — Pronto-Socorro</option>
-            <option>Observação Masculina — Pronto-Socorro</option>
-            <option>Pátio — Frente da Caldeira</option>
-            <option>Recepção — Ambulatório</option>
-            <option>Recepção — Pronto-Socorro</option>
-            <option>Refeitório</option>
-            <option>Resíduos Sólidos</option>
-            <option>Salão do Auditório</option>
-          </optgroup>
+          <option value="">— Selecione o Andar primeiro —</option>
         </select>
       </div>
       <div class="mfg"><label>Referência / Descrição</label><textarea id="hf-desc" placeholder="Ex: próximo à porta, lado direito…"></textarea></div>
@@ -313,6 +219,14 @@
       <div class="g2">
         <div class="mfg"><label>Teste Pressão</label><input id="hf-pt" type="month"></div>
         <div class="mfg"><label>Pressão (bar)</label><input id="hf-pv" placeholder="10"></div>
+      </div>
+      <div class="fsec">Foto</div>
+      <div class="mfg"><label>Foto do Hidrante</label>
+        <div id="hf-foto-preview" style="display:none;margin-bottom:8px">
+          <img id="hf-foto-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
+        </div>
+        <input type="file" id="hf-foto" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('hid')">
+        <button type="button" class="btn bout bfull" onclick="document.getElementById('hf-foto').click()">📷 Tirar/Escolher Foto</button>
       </div>
       <div class="fsec">Observações</div>
       <div class="mfg"><label>Obs.</label><textarea id="hf-obs"></textarea></div>
@@ -361,6 +275,22 @@
     <div class="mfoot">
       <button class="btn bout bfull" data-close="ov-nu">Cancelar</button>
       <button class="btn bgreen bfull" id="btn-cria-user">✅ Criar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: TROCAR SENHA ══ -->
+<div class="ov center" id="ov-senha">
+  <div class="modal sm">
+    <div class="mh"><span>🔑</span><h3>Criar Nova Senha</h3></div>
+    <div class="mbody">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Este é seu primeiro acesso. Por segurança, crie uma nova senha.</p>
+      <div class="mfg"><label>Nova Senha <span class="req">*</span></label><input id="ns-senha" type="password" placeholder="mínimo 6 caracteres"></div>
+      <div class="mfg"><label>Confirmar Senha <span class="req">*</span></label><input id="ns-conf" type="password" placeholder="repita a senha"></div>
+      <div id="ns-err" style="color:var(--red);font-size:12px;font-weight:600;min-height:16px"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bred bfull" id="btn-salva-senha">✅ Salvar Nova Senha</button>
     </div>
   </div>
 </div>
