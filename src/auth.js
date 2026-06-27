@@ -36,23 +36,36 @@ export async function getMeuPerfil() {
   return { ...data, email: user.email }
 }
 
-/** Admin: convida usuário por email */
+/** Admin: cria usuário via REST API do Supabase */
 export async function criarUsuario(email, senha, nome, role) {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password: senha,
-    options: {
-      data: { nome, role },
-      emailRedirectTo: window.location.origin
-    }
+  const SUPABASE_URL      = import.meta.env.VITE_SUPABASE_URL
+  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+  // Cria usuário usando endpoint de signup sem sessão
+  const resp = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY
+    },
+    body: JSON.stringify({
+      email,
+      password: senha,
+      data: { nome, role }
+    })
   })
-  if (error) throw error
-  if (data.user) {
-    await supabase
-      .from('perfis')
-      .upsert({ id: data.user.id, nome, role, primeiro_acesso: true })
+
+  const data = await resp.json()
+  if (data.error || data.msg || !data.id) {
+    throw new Error(data.error_description || data.msg || data.message || 'Erro ao criar usuário')
   }
-  return data.user
+
+  // Salva perfil
+  await supabase
+    .from('perfis')
+    .upsert({ id: data.id, nome, role, primeiro_acesso: true })
+
+  return data
 }
 
 /** Admin: lista todos os perfis com email */
