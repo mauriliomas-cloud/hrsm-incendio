@@ -128,8 +128,77 @@
         <div class="mfg"><label>Marca</label><input id="ef-mk" placeholder="Kidde"></div>
       </div>
       <div class="fsec">Localização</div>
-      <div class="mfg"><label>Local <span class="req">*</span></label><input id="ef-loc" placeholder="Bloco A — Corredor 2"></div>
-      <div class="mfg"><label>Descrição detalhada</label><textarea id="ef-desc" placeholder="Referências, setor…"></textarea></div>
+      <div class="mfg"><label>Andar</label>
+        <select id="ef-andar" onchange="toggleAndar('ext')">
+          <option value="">— Selecione o Andar —</option>
+          <option>Térreo</option>
+          <option>1º Andar</option>
+          <option>2º Andar</option>
+          <option>3º Andar</option>
+          <option>4º Andar</option>
+          <option>5º Andar</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Setor <span class="req">*</span></label>
+        <select id="ef-setor">
+          <option value="">— Selecione o Setor —</option>
+          <optgroup label="🏢 Dentro do Prédio">
+            <option>Corredor AB</option>
+            <option>Corredor BC</option>
+            <option>Corredor Norte</option>
+            <option>Corredor Sul</option>
+            <option>Hall Elevador — Bloco A</option>
+            <option>Hall Elevador — Bloco B</option>
+            <option>Hall Elevador — Bloco C</option>
+          </optgroup>
+          <optgroup label="🏥 Setores Especiais">
+            <option>Almoxarifado</option>
+            <option>Anatomia</option>
+            <option>Anexo</option>
+            <option>APC</option>
+            <option>Área de Gases — Oxigênio</option>
+            <option>Auditório</option>
+            <option>Banco de Leite</option>
+            <option>Banco de Sangue</option>
+            <option>Caldeira Interna</option>
+            <option>Casa de Máquinas — Torre A</option>
+            <option>Casa de Máquinas — Torre B</option>
+            <option>Casa de Máquinas — Torre C</option>
+            <option>Centro Cirúrgico Externo</option>
+            <option>Centro Cirúrgico Interno</option>
+            <option>Centro Obstétrico Externo</option>
+            <option>Centro Obstétrico Interno</option>
+            <option>CME Externo</option>
+            <option>CME Interno</option>
+            <option>Copa — Centro Cirúrgico</option>
+            <option>Copa dos Vigilantes</option>
+            <option>Corredor — Fisioterapia</option>
+            <option>Corredor — Pronto-Socorro Infantil</option>
+            <option>Corredor — Pronto-Socorro / Triagem</option>
+            <option>Depósito</option>
+            <option>Depósito de Limpeza</option>
+            <option>Espaço Lúdico</option>
+            <option>Farmácia</option>
+            <option>Fisioterapia</option>
+            <option>Guarita — Área de Gases</option>
+            <option>Guarita — Portaria Central</option>
+            <option>Guarita — Pronto-Socorro</option>
+            <option>Hotelaria</option>
+            <option>Mezanino — Ala Norte</option>
+            <option>Mezanino — Ala Sul</option>
+            <option>Núcleo de Mobilidade (NUMOB)</option>
+            <option>Observação Feminina — Pronto-Socorro</option>
+            <option>Observação Masculina — Pronto-Socorro</option>
+            <option>Pátio — Frente da Caldeira</option>
+            <option>Recepção — Ambulatório</option>
+            <option>Recepção — Pronto-Socorro</option>
+            <option>Refeitório</option>
+            <option>Resíduos Sólidos</option>
+            <option>Salão do Auditório</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="mfg"><label>Referência / Descrição</label><textarea id="ef-desc" placeholder="Ex: próximo à porta, lado direito…"></textarea></div>
       <div class="fsec">Datas</div>
       <div class="g2">
         <div class="mfg"><label>Validade Carga <span class="req">*</span></label><input id="ef-val" type="month"></div>
@@ -165,8 +234,77 @@
         <div class="mfg"><label>Diâmetro</label><input id="hf-dm" placeholder="63 mm"></div>
       </div>
       <div class="fsec">Localização</div>
-      <div class="mfg"><label>Local <span class="req">*</span></label><input id="hf-loc" placeholder="Bloco B — Escada 1"></div>
-      <div class="mfg"><label>Descrição</label><textarea id="hf-desc"></textarea></div>
+      <div class="mfg"><label>Andar</label>
+        <select id="hf-andar" onchange="toggleAndar('hid')">
+          <option value="">— Selecione o Andar —</option>
+          <option>Térreo</option>
+          <option>1º Andar</option>
+          <option>2º Andar</option>
+          <option>3º Andar</option>
+          <option>4º Andar</option>
+          <option>5º Andar</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Setor <span class="req">*</span></label>
+        <select id="hf-setor">
+          <option value="">— Selecione o Setor —</option>
+          <optgroup label="🏢 Dentro do Prédio">
+            <option>Corredor AB</option>
+            <option>Corredor BC</option>
+            <option>Corredor Norte</option>
+            <option>Corredor Sul</option>
+            <option>Hall Elevador — Bloco A</option>
+            <option>Hall Elevador — Bloco B</option>
+            <option>Hall Elevador — Bloco C</option>
+          </optgroup>
+          <optgroup label="🏥 Setores Especiais">
+            <option>Almoxarifado</option>
+            <option>Anatomia</option>
+            <option>Anexo</option>
+            <option>APC</option>
+            <option>Área de Gases — Oxigênio</option>
+            <option>Auditório</option>
+            <option>Banco de Leite</option>
+            <option>Banco de Sangue</option>
+            <option>Caldeira Interna</option>
+            <option>Casa de Máquinas — Torre A</option>
+            <option>Casa de Máquinas — Torre B</option>
+            <option>Casa de Máquinas — Torre C</option>
+            <option>Centro Cirúrgico Externo</option>
+            <option>Centro Cirúrgico Interno</option>
+            <option>Centro Obstétrico Externo</option>
+            <option>Centro Obstétrico Interno</option>
+            <option>CME Externo</option>
+            <option>CME Interno</option>
+            <option>Copa — Centro Cirúrgico</option>
+            <option>Copa dos Vigilantes</option>
+            <option>Corredor — Fisioterapia</option>
+            <option>Corredor — Pronto-Socorro Infantil</option>
+            <option>Corredor — Pronto-Socorro / Triagem</option>
+            <option>Depósito</option>
+            <option>Depósito de Limpeza</option>
+            <option>Espaço Lúdico</option>
+            <option>Farmácia</option>
+            <option>Fisioterapia</option>
+            <option>Guarita — Área de Gases</option>
+            <option>Guarita — Portaria Central</option>
+            <option>Guarita — Pronto-Socorro</option>
+            <option>Hotelaria</option>
+            <option>Mezanino — Ala Norte</option>
+            <option>Mezanino — Ala Sul</option>
+            <option>Núcleo de Mobilidade (NUMOB)</option>
+            <option>Observação Feminina — Pronto-Socorro</option>
+            <option>Observação Masculina — Pronto-Socorro</option>
+            <option>Pátio — Frente da Caldeira</option>
+            <option>Recepção — Ambulatório</option>
+            <option>Recepção — Pronto-Socorro</option>
+            <option>Refeitório</option>
+            <option>Resíduos Sólidos</option>
+            <option>Salão do Auditório</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="mfg"><label>Referência / Descrição</label><textarea id="hf-desc" placeholder="Ex: próximo à porta, lado direito…"></textarea></div>
       <div class="fsec">Datas</div>
       <div class="g2">
         <div class="mfg"><label>Última Inspeção</label><input id="hf-ui" type="month"></div>

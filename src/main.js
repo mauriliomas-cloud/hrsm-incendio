@@ -288,16 +288,34 @@ function renderHid() {
 function gv(id) { return document.getElementById(id)?.value || '' }
 function sv(id, v) { const el = document.getElementById(id); if(el) el.value = v || '' }
 
+// Setores que ficam dentro do prédio (precisam de andar)
+const SETORES_PREDIO = [
+  'Corredor AB','Corredor BC','Corredor Norte','Corredor Sul',
+  'Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C'
+]
+
+function toggleAndar(tipo) {
+  // Não faz nada por enquanto — andar é sempre opcional
+}
+
+function montarLocal(andar, setor) {
+  if (!setor) return ''
+  if (andar && SETORES_PREDIO.includes(setor)) return andar + ' — ' + setor
+  return setor
+}
+
 function abrirExt() {
   editExtId = null
   document.getElementById('tit-ext').textContent = 'Novo Extintor'
-  ;['ef-num','ef-cls','ef-cap','ef-mk','ef-loc','ef-desc','ef-val','ef-troca','ef-hdt','ef-hnum','ef-obs'].forEach(id => sv(id,''))
+  ;['ef-num','ef-cls','ef-cap','ef-mk','ef-andar','ef-setor','ef-desc','ef-val','ef-troca','ef-hdt','ef-hnum','ef-obs'].forEach(id => sv(id,''))
   abrirOv('ov-ext')
 }
 
 document.getElementById('btn-salva-ext').addEventListener('click', async () => {
-  const num = gv('ef-num').trim(), cls = gv('ef-cls'), loc = gv('ef-loc').trim(), val = gv('ef-val')
-  if (!num||!cls||!loc||!val) { toast('⚠️ Preencha os campos obrigatórios'); return }
+  const num   = gv('ef-num').trim(), cls = gv('ef-cls'), val = gv('ef-val')
+  const andar = gv('ef-andar'), setor = gv('ef-setor')
+  const loc   = montarLocal(andar, setor)
+  if (!num||!cls||!setor||!val) { toast('⚠️ Preencha os campos obrigatórios'); return }
   const payload = {
     num, cls, loc, validade: val,
     cap: gv('ef-cap'), mk: gv('ef-mk'), descricao: gv('ef-desc'),
@@ -330,7 +348,17 @@ function editExt(id) {
   editExtId = id
   document.getElementById('tit-ext').textContent = 'Editar Extintor'
   sv('ef-num', e.num); sv('ef-cls', e.cls); sv('ef-cap', e.cap); sv('ef-mk', e.mk)
-  sv('ef-loc', e.loc); sv('ef-desc', e.descricao); sv('ef-val', e.validade)
+  // Tenta separar andar e setor do local salvo
+  const partes = (e.loc || '').split(' — ')
+  const andares = ['Térreo','1º Andar','2º Andar','3º Andar','4º Andar','5º Andar']
+  if (partes.length >= 2 && andares.includes(partes[0])) {
+    sv('ef-andar', partes[0])
+    sv('ef-setor', partes.slice(1).join(' — '))
+  } else {
+    sv('ef-andar', '')
+    sv('ef-setor', e.loc || '')
+  }
+  sv('ef-desc', e.descricao); sv('ef-val', e.validade)
   sv('ef-troca', e.troca); sv('ef-hdt', e.hdt); sv('ef-hnum', e.hnum); sv('ef-obs', e.obs)
   abrirOv('ov-ext')
 }
@@ -397,13 +425,15 @@ function abrirMan(id, modo) {
 function abrirHid() {
   editHidId = null
   document.getElementById('tit-hid').textContent = 'Novo Hidrante'
-  ;['hf-num','hf-tp','hf-mk','hf-dm','hf-loc','hf-desc','hf-ui','hf-pi','hf-pt','hf-pv','hf-obs'].forEach(id => sv(id,''))
+  ;['hf-num','hf-tp','hf-mk','hf-dm','hf-andar','hf-setor','hf-desc','hf-ui','hf-pi','hf-pt','hf-pv','hf-obs'].forEach(id => sv(id,''))
   abrirOv('ov-hid')
 }
 
 document.getElementById('btn-salva-hid').addEventListener('click', async () => {
-  const num = gv('hf-num').trim(), tp = gv('hf-tp'), loc = gv('hf-loc').trim(), pi = gv('hf-pi')
-  if (!num||!tp||!loc||!pi) { toast('⚠️ Preencha os campos obrigatórios'); return }
+  const num   = gv('hf-num').trim(), tp = gv('hf-tp'), pi = gv('hf-pi')
+  const andar = gv('hf-andar'), setor = gv('hf-setor')
+  const loc   = montarLocal(andar, setor)
+  if (!num||!tp||!setor||!pi) { toast('⚠️ Preencha os campos obrigatórios'); return }
   const payload = {
     num, tp, loc, pi,
     mk:gv('hf-mk'), dm:gv('hf-dm'), descricao:gv('hf-desc'),
@@ -422,7 +452,17 @@ function editHid(id) {
   editHidId = id
   document.getElementById('tit-hid').textContent = 'Editar Hidrante'
   sv('hf-num',h.num); sv('hf-tp',h.tp); sv('hf-mk',h.mk); sv('hf-dm',h.dm)
-  sv('hf-loc',h.loc); sv('hf-desc',h.descricao); sv('hf-ui',h.ui)
+  // Tenta separar andar e setor do local salvo
+  const partes = (h.loc || '').split(' — ')
+  const andares = ['Térreo','1º Andar','2º Andar','3º Andar','4º Andar','5º Andar']
+  if (partes.length >= 2 && andares.includes(partes[0])) {
+    sv('hf-andar', partes[0])
+    sv('hf-setor', partes.slice(1).join(' — '))
+  } else {
+    sv('hf-andar', '')
+    sv('hf-setor', h.loc || '')
+  }
+  sv('hf-desc',h.descricao); sv('hf-ui',h.ui)
   sv('hf-pi',h.pi); sv('hf-pt',h.pt); sv('hf-pv',h.pv); sv('hf-obs',h.obs)
   abrirOv('ov-hid')
 }
