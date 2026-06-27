@@ -346,18 +346,21 @@
 <!-- ══ MODAL: NOVO USUÁRIO ══ -->
 <div class="ov center" id="ov-nu">
   <div class="modal sm">
-    <div class="mh"><span>👤</span><h3>Novo Usuário</h3><button class="mclose" data-close="ov-nu">✕</button></div>
+    <div class="mh"><span>👤</span><h3>Convidar Usuário</h3><button class="mclose" data-close="ov-nu">✕</button></div>
     <div class="mbody">
-      <div class="mfg"><label>E-mail <span class="req">*</span></label><input id="nu-e" type="email" placeholder="nome@hrsm.gov.br"></div>
-      <div class="mfg"><label>Nome completo <span class="req">*</span></label><input id="nu-n" placeholder="João da Silva"></div>
-      <div class="mfg"><label>Senha <span class="req">*</span></label><input id="nu-s" type="password" placeholder="mín. 6 caracteres"></div>
+      <div style="background:var(--bluel);border-radius:9px;padding:10px 12px;font-size:12px;color:var(--blue);margin-bottom:14px">
+        📧 O usuário receberá um email para confirmar o acesso e criar sua própria senha.
+      </div>
+      <div class="mfg"><label>E-mail <span class="req">*</span></label><input id="nu-e" type="email" placeholder="email@exemplo.com"></div>
+      <div class="mfg"><label>Nome completo <span class="req">*</span></label><input id="nu-n" placeholder="Nome do usuário"></div>
+      <div class="mfg"><label>Senha temporária <span class="req">*</span></label><input id="nu-s" type="password" placeholder="mín. 6 caracteres"></div>
       <div class="mfg"><label>Perfil</label>
         <select id="nu-r"><option value="user">Usuário padrão</option><option value="admin">Administrador</option></select>
       </div>
     </div>
     <div class="mfoot">
       <button class="btn bout bfull" data-close="ov-nu">Cancelar</button>
-      <button class="btn bgreen bfull" id="btn-cria-user">✅ Criar</button>
+      <button class="btn bgreen bfull" id="btn-cria-user">✅ Criar e Enviar Convite</button>
     </div>
   </div>
 </div>

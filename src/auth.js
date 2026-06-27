@@ -30,16 +30,26 @@ export async function getMeuPerfil() {
   return data
 }
 
-/** Admin: cria novo usuário (usa Admin API via Edge Function ou direto no painel) */
+/** Admin: convida usuário por email (Supabase envia link automático) */
 export async function criarUsuario(email, senha, nome, role) {
-  // Cria usuário pelo auth
-  const { data, error } = await supabase.auth.admin.createUser({
+  // Usa signUp que não requer chave secreta
+  // O usuário receberá email para confirmar e criar senha
+  const { data, error } = await supabase.auth.signUp({
     email,
     password: senha,
-    user_metadata: { nome, role },
-    email_confirm: true
+    options: {
+      data: { nome, role },
+      emailRedirectTo: window.location.origin
+    }
   })
   if (error) throw error
+
+  // Atualiza o perfil com nome e role após criação
+  if (data.user) {
+    await supabase
+      .from('perfis')
+      .upsert({ id: data.user.id, nome, role, primeiro_acesso: true })
+  }
   return data.user
 }
 
