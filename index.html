@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#7B241C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>HRSM — Incêndio</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="ls">
+  <div class="lbox">
+    <div class="lic">🔥</div>
+    <h1>Combate a Incêndio</h1>
+    <p class="lsub">Hospital Regional de Santa Maria</p>
+    <div class="lfg"><label>E-mail</label><input id="lu" type="email" inputmode="email" autocomplete="username" placeholder="usuario@hrsm.gov.br"></div>
+    <div class="lfg"><label>Senha</label><input id="lp" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <div id="lerr" class="lerr"></div>
+    <button id="lbtn" class="lbtn">Entrar →</button>
+    <div class="lfoot">HRSM · CBMDF · Acesso restrito</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <span class="tlogo">🔥</span>
+    <div class="ttitle">HRSM Incêndio<small>Hospital Regional de Santa Maria</small></div>
+    <button class="user-btn" id="user-btn">
+      <div class="uav" id="uav">?</div>
+      <span id="unm">—</span>
+    </button>
+  </div>
+
+  <div class="content">
+    <!-- EXTINTORES -->
+    <div id="pg-ext" class="pg on">
+      <div id="st-ext" class="stats"></div>
+      <div class="sh"><h2>🧯 Extintores</h2><span class="cnt" id="cnt-ext">0</span></div>
+      <div class="sbar">
+        <input type="search" id="eq" placeholder="🔍 Nº, local, marca…" autocomplete="off">
+        <div class="sr2">
+          <select id="ecls">
+            <option value="">Todas as classes</option>
+            <option>AP</option><option>BC</option><option>ABC</option><option>CO₂</option>
+          </select>
+          <select id="ests">
+            <option value="">Todos os status</option>
+            <option value="ok">✅ Em dia</option>
+            <option value="warn">⚠️ Atenção</option>
+            <option value="danger">🔴 Vencido</option>
+            <option value="manut">🔧 Manutenção</option>
+          </select>
+        </div>
+        <div class="sr2">
+          <select id="emk"><option value="">Todas as marcas</option></select>
+          <button class="btn bout bsm" id="btn-limp-ext">✕ Limpar</button>
+        </div>
+      </div>
+      <div id="list-ext"></div>
+    </div>
+
+    <!-- HIDRANTES -->
+    <div id="pg-hid" class="pg">
+      <div id="st-hid" class="stats"></div>
+      <div class="sh"><h2>💧 Hidrantes</h2><span class="cnt" id="cnt-hid">0</span></div>
+      <div class="sbar">
+        <input type="search" id="hq" placeholder="🔍 Nº, local, marca…" autocomplete="off">
+        <div class="sr2">
+          <select id="htp">
+            <option value="">Todos os tipos</option>
+            <option>Hidrante de Parede</option><option>Mangotinho</option>
+            <option>Hidrante de Coluna</option><option>Hidrante Urbano</option>
+          </select>
+          <select id="hsts">
+            <option value="">Todos</option>
+            <option value="ok">✅ Em dia</option>
+            <option value="warn">⚠️ Atenção</option>
+            <option value="danger">🔴 Vencido</option>
+          </select>
+        </div>
+        <button class="btn bout bsm" id="btn-limp-hid">✕ Limpar</button>
+      </div>
+      <div id="list-hid"></div>
+    </div>
+
+    <!-- RELATÓRIO -->
+    <div id="pg-rel" class="pg">
+      <div class="sh">
+        <h2>📋 Relatório</h2>
+        <button class="btn bblue bsm" id="btn-rel-dl">⬇ Baixar PDF/Print</button>
+      </div>
+      <div id="rel-body"></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="pg-adm" class="pg">
+      <div class="sh"><h2>⚙️ Administração</h2></div>
+      <div id="adm-body"></div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button id="nb-ext" class="on" data-pg="ext"><div class="ni">🧯</div>Extintores</button>
+    <button id="nb-hid" data-pg="hid"><div class="ni">💧</div>Hidrantes</button>
+    <button id="nb-rel" data-pg="rel"><div class="ni">📋</div>Relatório</button>
+    <button id="nb-adm" data-pg="adm" style="display:none"><div class="ni">⚙️</div>Admin</button>
+  </div>
+  <button class="fab" id="fab">＋</button>
+</div>
+
+<!-- ══ MODAL: EXTINTOR ══ -->
+<div class="ov" id="ov-ext">
+  <div class="modal">
+    <div class="mh"><span>🧯</span><h3 id="tit-ext">Novo Extintor</h3><button class="mclose" data-close="ov-ext">✕</button></div>
+    <div class="mbody">
+      <div class="fsec">Identificação</div>
+      <div class="g2">
+        <div class="mfg"><label>Nº Patrimônio <span class="req">*</span></label><input id="ef-num" placeholder="EXT-001"></div>
+        <div class="mfg"><label>Classe <span class="req">*</span></label>
+          <select id="ef-cls"><option value="">—</option><option>AP</option><option>BC</option><option>ABC</option><option>CO₂</option></select></div>
+      </div>
+      <div class="g2">
+        <div class="mfg"><label>Capacidade</label><input id="ef-cap" placeholder="6 kg"></div>
+        <div class="mfg"><label>Marca</label><input id="ef-mk" placeholder="Kidde"></div>
+      </div>
+      <div class="fsec">Localização</div>
+      <div class="mfg"><label>Local <span class="req">*</span></label><input id="ef-loc" placeholder="Bloco A — Corredor 2"></div>
+      <div class="mfg"><label>Descrição detalhada</label><textarea id="ef-desc" placeholder="Referências, setor…"></textarea></div>
+      <div class="fsec">Datas</div>
+      <div class="g2">
+        <div class="mfg"><label>Validade Carga <span class="req">*</span></label><input id="ef-val" type="month"></div>
+        <div class="mfg"><label>Próxima Troca</label><input id="ef-troca" type="month"></div>
+      </div>
+      <div class="g2">
+        <div class="mfg"><label>Ano Hidrostático</label><input id="ef-hdt" type="number" min="2000" max="2099" placeholder="2024"></div>
+        <div class="mfg"><label>Nº Hidrostático</label><input id="ef-hnum" placeholder="TH-2024-001"></div>
+      </div>
+      <div class="fsec">Observações</div>
+      <div class="mfg"><label>Obs.</label><textarea id="ef-obs"></textarea></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bout bfull" data-close="ov-ext">Cancelar</button>
+      <button class="btn bred bfull" id="btn-salva-ext">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: HIDRANTE ══ -->
+<div class="ov" id="ov-hid">
+  <div class="modal">
+    <div class="mh"><span>💧</span><h3 id="tit-hid">Novo Hidrante</h3><button class="mclose" data-close="ov-hid">✕</button></div>
+    <div class="mbody">
+      <div class="fsec">Identificação</div>
+      <div class="g2">
+        <div class="mfg"><label>Nº Patrimônio <span class="req">*</span></label><input id="hf-num" placeholder="HID-001"></div>
+        <div class="mfg"><label>Tipo <span class="req">*</span></label>
+          <select id="hf-tp"><option value="">—</option><option>Hidrante de Parede</option><option>Mangotinho</option><option>Hidrante de Coluna</option><option>Hidrante Urbano</option></select></div>
+      </div>
+      <div class="g2">
+        <div class="mfg"><label>Marca</label><input id="hf-mk" placeholder="Tigre"></div>
+        <div class="mfg"><label>Diâmetro</label><input id="hf-dm" placeholder="63 mm"></div>
+      </div>
+      <div class="fsec">Localização</div>
+      <div class="mfg"><label>Local <span class="req">*</span></label><input id="hf-loc" placeholder="Bloco B — Escada 1"></div>
+      <div class="mfg"><label>Descrição</label><textarea id="hf-desc"></textarea></div>
+      <div class="fsec">Datas</div>
+      <div class="g2">
+        <div class="mfg"><label>Última Inspeção</label><input id="hf-ui" type="month"></div>
+        <div class="mfg"><label>Próxima Inspeção <span class="req">*</span></label><input id="hf-pi" type="month"></div>
+      </div>
+      <div class="g2">
+        <div class="mfg"><label>Teste Pressão</label><input id="hf-pt" type="month"></div>
+        <div class="mfg"><label>Pressão (bar)</label><input id="hf-pv" placeholder="10"></div>
+      </div>
+      <div class="fsec">Observações</div>
+      <div class="mfg"><label>Obs.</label><textarea id="hf-obs"></textarea></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bout bfull" data-close="ov-hid">Cancelar</button>
+      <button class="btn bred bfull" id="btn-salva-hid">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: MANUTENÇÃO ══ -->
+<div class="ov center" id="ov-man">
+  <div class="modal sm">
+    <div class="mh"><span>🔧</span><h3 id="tit-man">Manutenção</h3><button class="mclose" data-close="ov-man">✕</button></div>
+    <div class="mbody" id="man-body"></div>
+    <div class="mfoot" id="man-foot"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL: MENU USUÁRIO ══ -->
+<div class="ov center" id="ov-user">
+  <div class="modal sm">
+    <div class="mh"><span>👤</span><h3 id="um-name">Usuário</h3><button class="mclose" data-close="ov-user">✕</button></div>
+    <div class="mbody" style="display:flex;flex-direction:column;gap:10px">
+      <div id="um-adm" style="display:none">
+        <button class="btn bblue bfull" id="btn-ir-adm" style="width:100%">⚙️ Administração</button>
+      </div>
+      <button class="btn bred bfull" id="btn-logout">Sair →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: NOVO USUÁRIO ══ -->
+<div class="ov center" id="ov-nu">
+  <div class="modal sm">
+    <div class="mh"><span>👤</span><h3>Novo Usuário</h3><button class="mclose" data-close="ov-nu">✕</button></div>
+    <div class="mbody">
+      <div class="mfg"><label>E-mail <span class="req">*</span></label><input id="nu-e" type="email" placeholder="nome@hrsm.gov.br"></div>
+      <div class="mfg"><label>Nome completo <span class="req">*</span></label><input id="nu-n" placeholder="João da Silva"></div>
+      <div class="mfg"><label>Senha <span class="req">*</span></label><input id="nu-s" type="password" placeholder="mín. 6 caracteres"></div>
+      <div class="mfg"><label>Perfil</label>
+        <select id="nu-r"><option value="user">Usuário padrão</option><option value="admin">Administrador</option></select>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bout bfull" data-close="ov-nu">Cancelar</button>
+      <button class="btn bgreen bfull" id="btn-cria-user">✅ Criar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: CONFIRMAÇÃO ══ -->
+<div class="ov center" id="ov-conf">
+  <div class="modal sm conf-modal">
+    <div id="conf-ico" class="conf-ico">⚠️</div>
+    <h3 id="conf-tit">Confirmar</h3>
+    <p id="conf-msg"></p>
+    <div class="conf-btns">
+      <button class="btn bout bfull" id="conf-can">Cancelar</button>
+      <button class="btn bred bfull" id="conf-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

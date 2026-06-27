@@ -1,0 +1,17 @@
+{
+  "name": "hrsm-incendio",
+  "version": "1.0.0",
+  "description": "Sistema de Controle de Combate a Incêndio — HRSM",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}
