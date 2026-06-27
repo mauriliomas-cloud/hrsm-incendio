@@ -69,8 +69,14 @@ async function iniciarApp() {
 
     await Promise.all([carregarExt(), carregarHid()])
     irPg('ext')
-    escutarExtintores(() => carregarExt())
-    escutarHidrantes( () => carregarHid())
+
+    // Realtime — evita duplicar canais
+    try {
+      escutarExtintores(() => carregarExt())
+      escutarHidrantes(() => carregarHid())
+    } catch(re) {
+      console.warn('Realtime:', re.message)
+    }
   } catch (e) {
     console.error('Erro ao iniciar app:', e)
   }

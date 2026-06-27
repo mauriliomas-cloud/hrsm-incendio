@@ -85,10 +85,14 @@ export async function deletarHidrante(id) {
 }
 
 // ══════════════════════════════════════
+// ══════════════════════════════════════
 // REALTIME — escuta mudanças ao vivo
 // ══════════════════════════════════════
 
 export function escutarExtintores(callback) {
+  // Remove canal existente antes de criar novo
+  const existing = supabase.getChannels().find(c => c.topic === 'realtime:extintores_changes')
+  if (existing) supabase.removeChannel(existing)
   return supabase
     .channel('extintores_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'extintores' }, callback)
@@ -96,6 +100,8 @@ export function escutarExtintores(callback) {
 }
 
 export function escutarHidrantes(callback) {
+  const existing = supabase.getChannels().find(c => c.topic === 'realtime:hidrantes_changes')
+  if (existing) supabase.removeChannel(existing)
   return supabase
     .channel('hidrantes_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'hidrantes' }, callback)
