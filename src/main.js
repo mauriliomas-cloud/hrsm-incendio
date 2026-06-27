@@ -51,15 +51,6 @@ onAuthChange(async session => {
 
 async function iniciarApp() {
   try {
-    // Verifica se sessão ainda é válida (sessão única)
-    const { verificarSessao } = await import('./auth.js')
-    const sessaoValida = await verificarSessao()
-    if (!sessaoValida) {
-      const { logout } = await import('./auth.js')
-      await logout()
-      return
-    }
-
     perfil = await getMeuPerfil()
     document.getElementById('ls').style.display  = 'none'
     document.getElementById('app').style.display = 'block'
@@ -76,7 +67,7 @@ async function iniciarApp() {
       document.getElementById('ov-senha').classList.add('on')
     }
 
-    // Verifica sessão a cada 30 segundos
+    // Verifica sessão a cada 5 segundos
     setInterval(async () => {
       const { verificarSessao } = await import('./auth.js')
       const valida = await verificarSessao()
@@ -87,7 +78,7 @@ async function iniciarApp() {
           await logout()
         }, 2000)
       }
-    }, 30000)
+    }, 5000)
 
     await Promise.all([carregarExt(), carregarHid()])
     irPg('ext')

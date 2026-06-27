@@ -20,7 +20,9 @@ async function chamarEdge(payload) {
   return data
 }
 
-// Gera token aleatório de sessão
+// Token desta sessão (fica na memória do tab)
+let meuToken = null
+
 function gerarToken() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
@@ -31,41 +33,36 @@ export async function login(email, senha) {
   if (error) throw error
 
   if (data.user) {
-    const token = gerarToken()
-    // Salva token e último acesso no perfil
+    meuToken = gerarToken()
     await supabase.from('perfis')
       .update({
-        session_token: token,
+        session_token: meuToken,
         ultimo_acesso: new Date().toISOString()
       })
       .eq('id', data.user.id)
-    // Salva token localmente
-    localStorage.setItem('hrsm_session_token', token)
-    localStorage.setItem('hrsm_user_id', data.user.id)
   }
   return data.user
 }
 
 /** Logout */
 export async function logout() {
-  localStorage.removeItem('hrsm_session_token')
-  localStorage.removeItem('hrsm_user_id')
+  meuToken = null
   await supabase.auth.signOut()
 }
 
 /** Verifica se sessão ainda é válida */
 export async function verificarSessao() {
-  const token   = localStorage.getItem('hrsm_session_token')
-  const userId  = localStorage.getItem('hrsm_user_id')
-  if (!token || !userId) return false
+  if (!meuToken) return false
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) return false
 
   const { data } = await supabase
     .from('perfis')
     .select('session_token')
-    .eq('id', userId)
+    .eq('id', session.user.id)
     .single()
 
-  return data?.session_token === token
+  return data?.session_token === meuToken
 }
 
 /** Retorna sessão atual */
@@ -83,6 +80,8 @@ export async function getMeuPerfil() {
     .select('*')
     .eq('id', session.user.id)
     .single()
+  // Define meuToken se ainda não foi definido (reload da página)
+  if (!meuToken && data?.session_token) meuToken = data.session_token
   return { ...data, email: session.user.email }
 }
 
