@@ -4,6 +4,12 @@ import { supabase } from './supabase.js'
 export async function login(email, senha) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
   if (error) throw error
+  // Registra último acesso
+  if (data.user) {
+    await supabase.from('perfis')
+      .update({ ultimo_acesso: new Date().toISOString() })
+      .eq('id', data.user.id)
+  }
   return data.user
 }
 
@@ -27,13 +33,11 @@ export async function getMeuPerfil() {
     .select('*')
     .eq('id', user.id)
     .single()
-  return data
+  return { ...data, email: user.email }
 }
 
-/** Admin: convida usuário por email (Supabase envia link automático) */
+/** Admin: convida usuário por email */
 export async function criarUsuario(email, senha, nome, role) {
-  // Usa signUp que não requer chave secreta
-  // O usuário receberá email para confirmar e criar senha
   const { data, error } = await supabase.auth.signUp({
     email,
     password: senha,
@@ -43,8 +47,6 @@ export async function criarUsuario(email, senha, nome, role) {
     }
   })
   if (error) throw error
-
-  // Atualiza o perfil com nome e role após criação
   if (data.user) {
     await supabase
       .from('perfis')
@@ -53,7 +55,7 @@ export async function criarUsuario(email, senha, nome, role) {
   return data.user
 }
 
-/** Admin: lista todos os perfis */
+/** Admin: lista todos os perfis com email */
 export async function listarUsuarios() {
   const { data, error } = await supabase
     .from('perfis')
@@ -63,9 +65,13 @@ export async function listarUsuarios() {
   return data
 }
 
-/** Admin: remove usuário */
+/** Admin: remove usuário pelo id do perfil */
 export async function removerUsuario(id) {
-  const { error } = await supabase.auth.admin.deleteUser(id)
+  // Remove perfil (a cascata remove o auth user)
+  const { error } = await supabase
+    .from('perfis')
+    .delete()
+    .eq('id', id)
   if (error) throw error
 }
 

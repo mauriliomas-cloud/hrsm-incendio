@@ -1012,19 +1012,51 @@ async function renderAdm() {
   try {
     const { listarUsuarios } = await import('./auth.js')
     const users = await listarUsuarios()
-    let h = `<div class="rcard"><div class="rhdr rinfo">👥 Usuários Cadastrados</div>`
+
+    function statusOnline(ultimoAcesso) {
+      if (!ultimoAcesso) return { cor: '#ccc', label: 'Nunca acessou' }
+      const diff = (Date.now() - new Date(ultimoAcesso).getTime()) / 60000 // minutos
+      if (diff < 5)   return { cor: '#1E8449', label: 'Online agora' }
+      if (diff < 60)  return { cor: '#D68910', label: `Há ${Math.floor(diff)} min` }
+      if (diff < 1440) return { cor: '#7F8C8D', label: `Há ${Math.floor(diff/60)}h` }
+      const d = new Date(ultimoAcesso)
+      return { cor: '#BDC3C7', label: d.toLocaleDateString('pt-BR') }
+    }
+
+    let h = `<div class="rcard"><div class="rhdr rinfo">👥 Usuários Cadastrados (${users.length})</div>`
     users.forEach(u => {
+      const st = statusOnline(u.ultimo_acesso)
+      const ehEu = u.id === perfil.id
       h += `<div class="urow">
-        <div class="uav2">${u.nome.charAt(0).toUpperCase()}</div>
+        <div class="uav2">${(u.nome||'?').charAt(0).toUpperCase()}</div>
         <div class="uinfo">
-          <div class="un">${u.nome}</div>
-          <div class="ul">${u.role==='admin'?'<b style="color:#C0392B">Administrador</b>':'Usuário'}</div>
+          <div class="un">${u.nome||'—'}
+            <span style="display:inline-flex;align-items:center;gap:4px;margin-left:8px">
+              <span style="width:8px;height:8px;border-radius:50%;background:${st.cor};display:inline-block"></span>
+              <span style="font-size:10px;color:${st.cor};font-weight:600">${st.label}</span>
+            </span>
+          </div>
+          <div class="ul">
+            ${u.role==='admin'?'<b style="color:#C0392B">Administrador</b>':'Usuário'}
+            ${ehEu ? ' · <b style="color:#1A5276">Você</b>' : ''}
+          </div>
         </div>
-        ${u.id !== perfil.id ? `<button class="udel" data-uid="${u.id}" data-nome="${u.nome}">Remover</button>` : ''}
+        ${!ehEu ? `<button class="udel" data-uid="${u.id}" data-nome="${u.nome||''}">🗑️</button>` : ''}
       </div>`
     })
     h += `<div style="padding:12px 13px"><button class="btn bgreen bfull" id="btn-open-nu">＋ Novo Usuário</button></div>`
     h += `</div>`
+
+    // Backup
+    h += `<div class="rcard"><div class="rhdr rinfo">💾 Backup</div>
+      <div style="padding:13px;display:flex;flex-direction:column;gap:9px">
+        <button class="btn bblue bfull" onclick="expBkp()">⬇ Exportar Backup JSON</button>
+        <label class="btn bout bfull" style="cursor:pointer">⬆ Importar Backup JSON
+          <input type="file" accept=".json" onchange="impBkp(event)" style="display:none">
+        </label>
+      </div>
+    </div>`
+
     el.innerHTML = h
 
     document.getElementById('btn-open-nu')?.addEventListener('click', () => {
@@ -1032,19 +1064,21 @@ async function renderAdm() {
       sv('nu-r','user')
       abrirOv('ov-nu')
     })
+
     el.querySelectorAll('.udel').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const ok = await confirmar('👤','Remover usuário',`Remover <b>${btn.dataset.nome}</b>?`,'Remover')
+        const ok = await confirmar('🗑️','Remover usuário',`Remover <b>${btn.dataset.nome}</b>?<br><small style="color:var(--red)">Esta ação não pode ser desfeita.</small>`,'Remover')
         if (!ok) return
         try {
           const { removerUsuario } = await import('./auth.js')
           await removerUsuario(btn.dataset.uid)
-          toast('🗑️ Usuário removido.'); renderAdm()
+          toast('🗑️ Usuário removido.')
+          renderAdm()
         } catch(err) { toast('Erro: ' + err.message, 'err') }
       })
     })
   } catch(err) {
-    el.innerHTML = `<div class="empty"><p>Erro ao carregar usuários.<br><small>${err.message}</small></p></div>`
+    el.innerHTML = `<div class="empty"><p>Erro ao carregar.<br><small>${err.message}</small></p></div>`
   }
 }
 
