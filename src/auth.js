@@ -1,10 +1,29 @@
 import { supabase } from './supabase.js'
 
+const EDGE_URL = () => `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hyper-handler`
+const ANON_KEY = () => import.meta.env.VITE_SUPABASE_ANON_KEY
+
+async function chamarEdge(payload) {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('Não autorizado')
+  const resp = await fetch(EDGE_URL(), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': ANON_KEY(),
+      'Authorization': `Bearer ${session.access_token}`
+    },
+    body: JSON.stringify(payload)
+  })
+  const data = await resp.json()
+  if (data.error) throw new Error(data.error)
+  return data
+}
+
 /** Login com email e senha */
 export async function login(email, senha) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
   if (error) throw error
-  // Registra último acesso
   if (data.user) {
     await supabase.from('perfis')
       .update({ ultimo_acesso: new Date().toISOString() })
@@ -24,7 +43,7 @@ export async function getSessao() {
   return data.session
 }
 
-/** Retorna perfil do usuário logado (nome, role) */
+/** Retorna perfil do usuário logado */
 export async function getMeuPerfil() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -38,29 +57,20 @@ export async function getMeuPerfil() {
 
 /** Admin: cria usuário via Edge Function */
 export async function criarUsuario(email, senha, nome, role) {
-  const SUPABASE_URL      = import.meta.env.VITE_SUPABASE_URL
-  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-  // Pega o token da sessão atual
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) throw new Error('Não autorizado')
-
-  const resp = await fetch(`${SUPABASE_URL}/functions/v1/hyper-handler`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${session.access_token}`
-    },
-    body: JSON.stringify({ email, senha, nome, role })
-  })
-
-  const data = await resp.json()
-  if (data.error) throw new Error(data.error)
-  return data
+  return chamarEdge({ acao: 'criar', email, senha, nome, role })
 }
 
-/** Admin: lista todos os perfis com email */
+/** Admin: deleta usuário via Edge Function */
+export async function removerUsuario(userId) {
+  return chamarEdge({ acao: 'deletar', userId })
+}
+
+/** Admin: bloquear/desbloquear usuário */
+export async function bloquearUsuario(userId, bloqueado) {
+  return chamarEdge({ acao: 'bloquear', userId, bloqueado })
+}
+
+/** Admin: lista todos os perfis */
 export async function listarUsuarios() {
   const { data, error } = await supabase
     .from('perfis')
@@ -68,16 +78,6 @@ export async function listarUsuarios() {
     .order('nome')
   if (error) throw error
   return data
-}
-
-/** Admin: remove usuário pelo id do perfil */
-export async function removerUsuario(id) {
-  // Remove perfil (a cascata remove o auth user)
-  const { error } = await supabase
-    .from('perfis')
-    .delete()
-    .eq('id', id)
-  if (error) throw error
 }
 
 /** Registra mudança na sessão */

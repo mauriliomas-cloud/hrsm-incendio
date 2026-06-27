@@ -1015,33 +1015,43 @@ async function renderAdm() {
 
     function statusOnline(ultimoAcesso) {
       if (!ultimoAcesso) return { cor: '#ccc', label: 'Nunca acessou' }
-      const diff = (Date.now() - new Date(ultimoAcesso).getTime()) / 60000 // minutos
-      if (diff < 5)   return { cor: '#1E8449', label: 'Online agora' }
-      if (diff < 60)  return { cor: '#D68910', label: `Há ${Math.floor(diff)} min` }
-      if (diff < 1440) return { cor: '#7F8C8D', label: `Há ${Math.floor(diff/60)}h` }
+      const diff = (Date.now() - new Date(ultimoAcesso).getTime()) / 60000
+      if (diff < 5)    return { cor: '#1E8449', label: '🟢 Online agora' }
+      if (diff < 60)   return { cor: '#D68910', label: `🟡 Há ${Math.floor(diff)} min` }
+      if (diff < 1440) return { cor: '#7F8C8D', label: `⚫ Há ${Math.floor(diff/60)}h` }
       const d = new Date(ultimoAcesso)
-      return { cor: '#BDC3C7', label: d.toLocaleDateString('pt-BR') }
+      return { cor: '#BDC3C7', label: '⚪ ' + d.toLocaleDateString('pt-BR') }
     }
 
-    let h = `<div class="rcard"><div class="rhdr rinfo">👥 Usuários Cadastrados (${users.length})</div>`
+    let h = `<div class="rcard"><div class="rhdr rinfo">👥 Usuários (${users.length})</div>`
     users.forEach(u => {
-      const st = statusOnline(u.ultimo_acesso)
+      const st  = statusOnline(u.ultimo_acesso)
       const ehEu = u.id === perfil.id
+      const bloq  = u.bloqueado
       h += `<div class="urow">
-        <div class="uav2">${(u.nome||'?').charAt(0).toUpperCase()}</div>
+        <div class="uav2" style="${bloq ? 'background:#FADBD8;color:#C0392B' : ''}">${(u.nome||'?').charAt(0).toUpperCase()}</div>
         <div class="uinfo">
-          <div class="un">${u.nome||'—'}
-            <span style="display:inline-flex;align-items:center;gap:4px;margin-left:8px">
-              <span style="width:8px;height:8px;border-radius:50%;background:${st.cor};display:inline-block"></span>
-              <span style="font-size:10px;color:${st.cor};font-weight:600">${st.label}</span>
-            </span>
+          <div class="un">
+            ${u.nome||'—'}
+            ${bloq ? '<span style="font-size:10px;color:#C0392B;font-weight:700;margin-left:6px">🔒 BLOQUEADO</span>' : ''}
+            ${ehEu ? '<span style="font-size:10px;color:#1A5276;font-weight:700;margin-left:6px">VOCÊ</span>' : ''}
           </div>
-          <div class="ul">
-            ${u.role==='admin'?'<b style="color:#C0392B">Administrador</b>':'Usuário'}
-            ${ehEu ? ' · <b style="color:#1A5276">Você</b>' : ''}
+          <div class="ul" style="display:flex;flex-direction:column;gap:2px">
+            <span>${u.role==='admin'?'<b style="color:#C0392B">Administrador</b>':'Usuário'}</span>
+            <span style="font-size:10px;color:${st.cor}">${st.label}</span>
           </div>
         </div>
-        ${!ehEu ? `<button class="udel" data-uid="${u.id}" data-nome="${u.nome||''}">🗑️</button>` : ''}
+        ${!ehEu ? `
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <button class="udel" data-uid="${u.id}" data-nome="${u.nome||''}" 
+            style="height:30px;padding:0 10px;border:1.5px solid var(--redl);background:var(--redl);color:var(--red);border-radius:7px;cursor:pointer;font-size:11px;font-weight:600">
+            🗑️ Excluir
+          </button>
+          <button class="ubloq" data-uid="${u.id}" data-nome="${u.nome||''}" data-bloq="${bloq}"
+            style="height:30px;padding:0 10px;border:1.5px solid ${bloq?'var(--greenl)':'var(--amberl)'};background:${bloq?'var(--greenl)':'var(--amberl)'};color:${bloq?'var(--green)':'var(--amber)'};border-radius:7px;cursor:pointer;font-size:11px;font-weight:600">
+            ${bloq ? '🔓 Desbloquear' : '🔒 Bloquear'}
+          </button>
+        </div>` : ''}
       </div>`
     })
     h += `<div style="padding:12px 13px"><button class="btn bgreen bfull" id="btn-open-nu">＋ Novo Usuário</button></div>`
@@ -1065,18 +1075,42 @@ async function renderAdm() {
       abrirOv('ov-nu')
     })
 
+    // Deletar
     el.querySelectorAll('.udel').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const ok = await confirmar('🗑️','Remover usuário',`Remover <b>${btn.dataset.nome}</b>?<br><small style="color:var(--red)">Esta ação não pode ser desfeita.</small>`,'Remover')
+        const ok = await confirmar('🗑️','Excluir usuário',
+          `Excluir <b>${btn.dataset.nome}</b>?<br><small style="color:var(--red)">Esta ação não pode ser desfeita.</small>`,
+          'Excluir')
         if (!ok) return
         try {
           const { removerUsuario } = await import('./auth.js')
           await removerUsuario(btn.dataset.uid)
-          toast('🗑️ Usuário removido.')
+          toast('🗑️ Usuário excluído.')
           renderAdm()
         } catch(err) { toast('Erro: ' + err.message, 'err') }
       })
     })
+
+    // Bloquear/Desbloquear
+    el.querySelectorAll('.ubloq').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const bloq = btn.dataset.bloq === 'true'
+        const acao = bloq ? 'Desbloquear' : 'Bloquear'
+        const ok = await confirmar(
+          bloq ? '🔓' : '🔒',
+          `${acao} usuário`,
+          `${acao} <b>${btn.dataset.nome}</b>?`,
+          acao)
+        if (!ok) return
+        try {
+          const { bloquearUsuario } = await import('./auth.js')
+          await bloquearUsuario(btn.dataset.uid, !bloq)
+          toast(`${bloq ? '🔓 Desbloqueado' : '🔒 Bloqueado'} com sucesso!`, 'ok')
+          renderAdm()
+        } catch(err) { toast('Erro: ' + err.message, 'err') }
+      })
+    })
+
   } catch(err) {
     el.innerHTML = `<div class="empty"><p>Erro ao carregar.<br><small>${err.message}</small></p></div>`
   }
