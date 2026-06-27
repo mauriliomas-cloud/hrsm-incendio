@@ -45,14 +45,14 @@ export async function getSessao() {
 
 /** Retorna perfil do usuário logado */
 export async function getMeuPerfil() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) return null
   const { data } = await supabase
     .from('perfis')
     .select('*')
-    .eq('id', user.id)
+    .eq('id', session.user.id)
     .single()
-  return { ...data, email: user.email }
+  return { ...data, email: session.user.email }
 }
 
 /** Admin: cria usuário via Edge Function */
