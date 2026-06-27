@@ -62,8 +62,8 @@ async function iniciarApp() {
     document.getElementById('nb-adm').style.display = isAdmin ? 'flex' : 'none'
     document.getElementById('um-adm').style.display  = isAdmin ? 'block' : 'none'
 
-    // Verifica primeiro acesso
-    if (perfil?.primeiro_acesso) {
+    // Verifica primeiro acesso — só para usuários não-admin
+    if (perfil?.primeiro_acesso === true && perfil?.role !== 'admin') {
       document.getElementById('ov-senha').classList.add('on')
     }
 
@@ -817,3 +817,8 @@ document.querySelectorAll('.ov').forEach(o => {
     if (e.target === o && o.id !== 'ov-conf') fecharOv(o.id)
   })
 })
+
+// Expõe funções globais necessárias pelo HTML
+window.filtrarSetor = filtrarSetor
+window.previewFoto  = previewFoto
+window.toggleAndar  = toggleAndar
