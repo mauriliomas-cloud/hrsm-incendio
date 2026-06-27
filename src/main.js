@@ -51,6 +51,15 @@ onAuthChange(async session => {
 
 async function iniciarApp() {
   try {
+    // Verifica se sessão ainda é válida (sessão única)
+    const { verificarSessao } = await import('./auth.js')
+    const sessaoValida = await verificarSessao()
+    if (!sessaoValida) {
+      const { logout } = await import('./auth.js')
+      await logout()
+      return
+    }
+
     perfil = await getMeuPerfil()
     document.getElementById('ls').style.display  = 'none'
     document.getElementById('app').style.display = 'block'
@@ -66,6 +75,19 @@ async function iniciarApp() {
     if (perfil?.primeiro_acesso === true && perfil?.role !== 'admin') {
       document.getElementById('ov-senha').classList.add('on')
     }
+
+    // Verifica sessão a cada 30 segundos
+    setInterval(async () => {
+      const { verificarSessao } = await import('./auth.js')
+      const valida = await verificarSessao()
+      if (!valida) {
+        toast('⚠️ Sua sessão foi encerrada em outro dispositivo.')
+        setTimeout(async () => {
+          const { logout } = await import('./auth.js')
+          await logout()
+        }, 2000)
+      }
+    }, 30000)
 
     await Promise.all([carregarExt(), carregarHid()])
     irPg('ext')
