@@ -1166,6 +1166,39 @@ document.querySelectorAll('.ov').forEach(o => {
   })
 })
 
+// ═══════════════════════════════════════
+// BOTÃO VOLTAR DO ANDROID
+// ═══════════════════════════════════════
+
+// Adiciona estado ao histórico para interceptar o botão voltar
+function pushState() {
+  history.pushState({ hrsm: true }, '', window.location.href)
+}
+
+// Quando o app carrega, adiciona um estado
+window.addEventListener('load', () => {
+  pushState()
+})
+
+// Intercepta o botão voltar
+window.addEventListener('popstate', (e) => {
+  // Se tem modal aberto, fecha o modal
+  const modaisAbertos = document.querySelectorAll('.ov.on')
+  if (modaisAbertos.length > 0) {
+    modaisAbertos.forEach(m => m.classList.remove('on'))
+    pushState() // Re-adiciona estado
+    return
+  }
+  // Se está em uma aba que não é extintores, volta para extintores
+  if (curPg !== 'ext') {
+    irPg('ext')
+    pushState()
+    return
+  }
+  // Se já está em extintores, re-adiciona estado para não sair
+  pushState()
+})
+
 // Expõe funções globais necessárias pelo HTML
 window.filtrarSetor = filtrarSetor
 window.previewFoto  = previewFoto
