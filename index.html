@@ -175,12 +175,12 @@
     <div class="mbody">
       <div class="fsec">Identificação</div>
       <div class="g2">
-        <div class="mfg"><label>Nº Patrimônio <span class="req">*</span></label><input id="ef-num" placeholder="EXT-001"></div>
+        <div class="mfg"><label>Nº Patrimônio <span class="req">*</span></label><input id="ef-num" type="number" min="1" max="999" placeholder="001" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
         <div class="mfg"><label>Classe <span class="req">*</span></label>
           <select id="ef-cls"><option value="">—</option><option>AP</option><option>BC</option><option>ABC</option><option>CO₂</option></select></div>
       </div>
       <div class="g2">
-        <div class="mfg"><label>Capacidade</label><input id="ef-cap" placeholder="6 kg"></div>
+        <div class="mfg"><label>Capacidade</label><input id="ef-cap" type="number" min="1" placeholder="6" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
         <div class="mfg"><label>Marca</label><input id="ef-mk" placeholder="Kidde"></div>
       </div>
       <div class="fsec">Localização</div>
@@ -249,7 +249,7 @@
     <div class="mbody">
       <div class="fsec">Identificação</div>
       <div class="g2">
-        <div class="mfg"><label>Nº Patrimônio <span class="req">*</span></label><input id="hf-num" placeholder="HID-001"></div>
+        <div class="mfg"><label>Nº Patrimônio <span class="req">*</span></label><input id="hf-num" type="number" min="1" max="999" placeholder="001" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
         <div class="mfg"><label>Tipo <span class="req">*</span></label>
           <select id="hf-tp"><option value="">—</option><option>Hidrante de Parede</option><option>Mangotinho</option><option>Hidrante de Coluna</option><option>Hidrante Urbano</option></select></div>
       </div>

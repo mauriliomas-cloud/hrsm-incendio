@@ -542,18 +542,29 @@ function abrirExt() {
 }
 
 document.getElementById('btn-salva-ext').addEventListener('click', async () => {
-  const num   = gv('ef-num').trim(), cls = gv('ef-cls'), val = gv('ef-val')
-  const setor = document.getElementById('ef-setor').value
-  const loc   = montarLocal('ext')
-  if (!num||!cls||!setor||!val) { toast('⚠️ Preencha os campos obrigatórios'); return }
+  const numRaw = gv('ef-num').trim()
+  const cls    = gv('ef-cls')
+  const val    = gv('ef-val')
+  const setor  = document.getElementById('ef-setor').value
+
+  if (!numRaw||!cls||!setor||!val) { toast('⚠️ Preencha os campos obrigatórios'); return }
+
+  // Formata número com 3 dígitos + prefixo EXT
+  const num = 'EXT-' + String(parseInt(numRaw,10)).padStart(3,'0')
+
+  // Formata capacidade com L ou KG
+  const capRaw = gv('ef-cap').replace(/[^0-9.,]/g,'').trim()
+  const cap = capRaw ? (cls === 'AP' ? capRaw + 'L' : capRaw + 'KG') : ''
+
+  const loc = montarLocal('ext')
 
   // Verifica número duplicado
-  const duplicado = EXT.find(e => e.num.trim().toLowerCase() === num.toLowerCase() && e.id !== editExtId)
+  const duplicado = EXT.find(e => e.num === num && e.id !== editExtId)
   if (duplicado) { toast('⚠️ Já existe um extintor com o número ' + num); return }
 
   const payload = {
     num, cls, loc, validade: val,
-    cap: gv('ef-cap'), mk: gv('ef-mk'), descricao: gv('ef-desc'),
+    cap, mk: gv('ef-mk'), descricao: gv('ef-desc'),
     ult_recarga: gv('ef-ult-recarga'),
     troca: gv('ef-troca'), hdt: gv('ef-hdt'), hnum: gv('ef-hnum'),
     fab: gv('ef-fab'), lacre: gv('ef-lacre'), empresa: gv('ef-empresa'),
@@ -580,7 +591,12 @@ function editExt(id) {
   const e = EXT.find(x => x.id === id); if (!e) return
   editExtId = id
   document.getElementById('tit-ext').textContent = 'Editar Extintor'
-  sv('ef-num', e.num); sv('ef-cls', e.cls); sv('ef-cap', e.cap); sv('ef-mk', e.mk)
+  // Remove prefixo EXT- para edição
+  const numEdit = (e.num || '').replace('EXT-','').replace(/^0+/,'') || ''
+  sv('ef-num', numEdit)
+  // Remove sufixo L ou KG da capacidade para edição
+  const capEdit = (e.cap || '').replace('KG','').replace('L','')
+  sv('ef-cap', capEdit)
   const loc = separarLocal(e.loc)
   sv('ef-andar', loc.andar)
   filtrarSetor('ext')
@@ -667,13 +683,17 @@ function abrirHid() {
 }
 
 document.getElementById('btn-salva-hid').addEventListener('click', async () => {
-  const num   = gv('hf-num').trim(), tp = gv('hf-tp'), pi = gv('hf-pi')
-  const setor = document.getElementById('hf-setor').value
-  const loc   = montarLocal('hid')
-  if (!num||!tp||!setor||!pi) { toast('⚠️ Preencha os campos obrigatórios'); return }
+  const numRawH = gv('hf-num').trim(), tp = gv('hf-tp'), pi = gv('hf-pi')
+  const setor   = document.getElementById('hf-setor').value
+
+  if (!numRawH||!tp||!setor||!pi) { toast('⚠️ Preencha os campos obrigatórios'); return }
+
+  // Formata número com 3 dígitos + prefixo HID
+  const num = 'HID-' + String(parseInt(numRawH,10)).padStart(3,'0')
+  const loc = montarLocal('hid')
 
   // Verifica número duplicado
-  const duplicadoH = HID.find(h => h.num.trim().toLowerCase() === num.toLowerCase() && h.id !== editHidId)
+  const duplicadoH = HID.find(h => h.num === num && h.id !== editHidId)
   if (duplicadoH) { toast('⚠️ Já existe um hidrante com o número ' + num); return }
 
   const payload = {
@@ -696,7 +716,10 @@ function editHid(id) {
   const h = HID.find(x => x.id === id); if (!h) return
   editHidId = id
   document.getElementById('tit-hid').textContent = 'Editar Hidrante'
-  sv('hf-num',h.num); sv('hf-tp',h.tp); sv('hf-mk',h.mk); sv('hf-dm',h.dm)
+  // Remove prefixo HID- para edição
+  const numEditH = (h.num || '').replace('HID-','').replace(/^0+/,'') || ''
+  sv('hf-num', numEditH)
+  sv('hf-tp',h.tp); sv('hf-mk',h.mk); sv('hf-dm',h.dm)
   const loc = separarLocal(h.loc)
   sv('hf-andar', loc.andar)
   filtrarSetor('hid')
