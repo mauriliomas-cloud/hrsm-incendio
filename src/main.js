@@ -258,8 +258,8 @@ function renderExt() {
         <div class="cf full"><div class="fl">Local</div><div class="fv">${e.loc}</div></div>
         <div class="cf"><div class="fl">Última Recarga</div><div class="fv">${fmm(e.ult_recarga)}</div></div>
         <div class="cf"><div class="fl">Próxima Recarga</div><div class="fv">${fmm(e.validade)}</div></div>
-        <div class="cf"><div class="fl">Último Teste Hid.</div><div class="fv">${fmm(e.hdt)}</div></div>
-        <div class="cf"><div class="fl">Próximo Teste Hid.</div><div class="fv">${fmm(e.troca)}</div></div>
+        <div class="cf"><div class="fl">Último Teste Hid.</div><div class="fv">${e.hdt||'—'}</div></div>
+        <div class="cf"><div class="fl">Próximo Teste Hid.</div><div class="fv">${e.troca||'—'}</div></div>
         <div class="cf"><div class="fl">Nº Laudo Hid.</div><div class="fv">${e.hnum||'—'}</div></div>
         <div class="cf"><div class="fl">Ano Fabricação</div><div class="fv">${e.fab||'—'}</div></div>
         <div class="cf"><div class="fl">Nº Lacre</div><div class="fv">${e.lacre||'—'}</div></div>
@@ -603,7 +603,9 @@ function editExt(id) {
   setTimeout(function(){ sv('ef-setor', loc.setor) }, 50)
   sv('ef-desc', e.descricao); sv('ef-val', e.validade)
   sv('ef-ult-recarga', e.ult_recarga)
-  sv('ef-troca', e.troca); sv('ef-hdt', e.hdt); sv('ef-hnum', e.hnum)
+  sv('ef-hdt', e.hdt)
+  sv('ef-troca', e.troca)
+  sv('ef-hnum', e.hnum)
   sv('ef-fab', e.fab); sv('ef-lacre', e.lacre); sv('ef-empresa', e.empresa)
   sv('ef-obs', e.obs)
   // Mostra foto existente
@@ -913,8 +915,8 @@ function abrirChecklist(id) {
           <span>Registro: <b style="${itemCor(ins.registro)}">${ins.registro||'—'}</b></span>
           <span>Lacre: <b style="${itemCor(ins.lacre)}">${ins.lacre||'—'}</b></span>
         </div>
-        ${ins.hid1_ult ? `<div style="font-size:10px;color:var(--muted);margin-top:4px">Teste Hid. Mang.1: ${fdata(ins.hid1_ult)} → ${fdata(ins.hid1_prox)}</div>` : ''}
-        ${ins.hid2_ult ? `<div style="font-size:10px;color:var(--muted)">Teste Hid. Mang.2: ${fdata(ins.hid2_ult)} → ${fdata(ins.hid2_prox)}</div>` : ''}
+        ${ins.hid1_ult ? `<div style="font-size:10px;color:var(--muted);margin-top:4px">🔧 Mang.1 — Último teste: <b>${fmm(ins.hid1_ult)}</b>${ins.hid1_prox ? ` · Próximo: <b>${fmm(ins.hid1_prox)}</b>` : ''}</div>` : ''}
+        ${ins.hid2_ult ? `<div style="font-size:10px;color:var(--muted)">🔧 Mang.2 — Último teste: <b>${fmm(ins.hid2_ult)}</b>${ins.hid2_prox ? ` · Próximo: <b>${fmm(ins.hid2_prox)}</b>` : ''}</div>` : ''}
         ${ins.obs ? `<div style="font-size:11px;color:var(--ink2);margin-top:4px;font-style:italic">"${ins.obs}"</div>` : ''}
       </div>`).join('')
   } else {
@@ -1263,10 +1265,18 @@ window.addEventListener('popstate', (e) => {
 })
 
 // Expõe funções globais necessárias pelo HTML
-window.filtrarSetor = filtrarSetor
-window.previewFoto  = previewFoto
-window.toggleAndar  = toggleAndar
-window.verFoto      = verFoto
+window.filtrarSetor   = filtrarSetor
+window.previewFoto    = previewFoto
+window.toggleAndar    = toggleAndar
+window.verFoto        = verFoto
+window.autoUltTeste   = autoUltTeste
+
+function autoUltTeste() {
+  const prox = parseInt(document.getElementById('ef-troca').value)
+  if (prox && prox >= 2005) {
+    document.getElementById('ef-hdt').value = prox - 5
+  }
+}
 
 function verFoto(url, titulo) {
   // Cria modal de foto dinamicamente

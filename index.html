@@ -212,8 +212,8 @@
       </div>
       <div class="fsec">Teste Hidrostático (NBR 12962 — a cada 5 anos)</div>
       <div class="g2">
-        <div class="mfg"><label>Último Teste Hidrostático</label><input id="ef-hdt" type="month"></div>
-        <div class="mfg"><label>Próximo Teste Hidrostático</label><input id="ef-troca" type="month"></div>
+        <div class="mfg"><label>Último Teste Hidrostático</label><input id="ef-hdt" type="number" min="2000" max="2099" placeholder="2024" readonly style="background:var(--bg)"></div>
+        <div class="mfg"><label>Próximo Teste Hidrostático</label><input id="ef-troca" type="number" min="2000" max="2099" placeholder="2029" onchange="autoUltTeste()"></div>
       </div>
       <div class="g2">
         <div class="mfg"><label>Nº do Laudo Hidrostático</label><input id="ef-hnum" placeholder="TH-2024-001"></div>
