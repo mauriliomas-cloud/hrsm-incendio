@@ -1,13 +1,13 @@
 /** Formata YYYY-MM → Mmm/YYYY */
 export function fmm(d) {
-  if (!d) return '—'
-  const parts = d.split('-')
+  if (!d || d === 'undefined' || d === 'null') return '—'
+  const parts = String(d).split('-')
   if (parts.length === 3) {
-    // Formato YYYY-MM-DD (data completa)
     const [y, m, dd] = parts
     return dd + '/' + m + '/' + y
   }
   const [y, m] = parts
+  if (!m) return y // só ano
   const M = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
   return (M[parseInt(m, 10) - 1] || m) + '/' + y
 }
