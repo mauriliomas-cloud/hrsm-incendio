@@ -14,6 +14,19 @@ let EXT = [], HID = [], perfil = null
 let curPg = 'ext', editExtId = null, editHidId = null, manId = null
 
 // ═══════════════════════════════════════
+// DETECÇÃO DE CONEXÃO
+// ═══════════════════════════════════════
+window.addEventListener('online', () => {
+  toast('✅ Conexão restaurada!', 'ok')
+  carregarExt()
+  carregarHid()
+})
+
+window.addEventListener('offline', () => {
+  toast('⚠️ Sem internet — modo offline')
+})
+
+// ═══════════════════════════════════════
 // TELA INICIAL
 // ═══════════════════════════════════════
 document.getElementById('btn-ir-login')?.addEventListener('click', () => {
