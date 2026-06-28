@@ -65,7 +65,20 @@ export function stBadge(s) {
   return `<span class="badge-st ${C[s] || 'st-warn'}">${L[s] || s}</span>`
 }
 
-/** Badge de classe de extintor */
+/** Retorna status do hidrante — verifica se checklist foi feito esse mês */
+export function getStatusHid(checklist) {
+  if (!checklist) return 'danger'
+  let hist = checklist
+  if (typeof hist === 'string') { try { hist = JSON.parse(hist) } catch(e) { return 'danger' } }
+  if (!Array.isArray(hist) || !hist.length) return 'danger'
+  const ult = hist[hist.length - 1]
+  if (!ult.data) return 'danger'
+  const d = new Date(ult.data)
+  const now = new Date()
+  // Verifica se foi feito no mês atual
+  if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) return 'ok'
+  return 'danger'
+}
 export function clsBadge(c) {
   const key = (c || '').replace('₂','2').toLowerCase()
   return `<span class="badge-cls cls-${key}">${c}</span>`

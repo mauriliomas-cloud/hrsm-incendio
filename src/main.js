@@ -4,7 +4,7 @@ import {
   listarExtintores, inserirExtintor, atualizarExtintor, deletarExtintor, escutarExtintores,
   listarHidrantes,  inserirHidrante,  atualizarHidrante,  deletarHidrante, escutarHidrantes
 } from './db.js'
-import { fmm, fdt, sortByNum, getStatus, stBadge, clsBadge, toast, confirmar } from './utils.js'
+import { fmm, fdt, sortByNum, getStatus, getStatusHid, stBadge, clsBadge, toast, confirmar } from './utils.js'
 import { baixarRelatorio, abrirRelatorio } from './relatorio.js'
 
 // ═══════════════════════════════════════
@@ -207,14 +207,12 @@ function stExt() {
     `<div class="sc" style="border-color:#F4ECF7"><div class="sl">CO₂</div><div class="sv" style="color:#6C3483">${co2}</div><div class="ss">gás carbônico</div></div>`
 }
 function stHid() {
-  const ok   = HID.filter(h => getStatus(h.pi, false) === 'ok').length
-  const warn = HID.filter(h => getStatus(h.pi, false) === 'warn').length
-  const venc = HID.filter(h => getStatus(h.pi, false) === 'danger').length
+  const ok      = HID.filter(h => getStatusHid(h.checklist) === 'ok').length
+  const pending = HID.filter(h => getStatusHid(h.checklist) === 'danger').length
   document.getElementById('st-hid').innerHTML =
     mkSt('Total', HID.length, 'cadastrados', '') +
-    mkSt('Em dia', ok, 'OK', 'cg') +
-    mkSt('Atenção', warn, '60 dias', 'ca') +
-    mkSt('Vencidos', venc, 'urgente', 'cr')
+    mkSt('Checklist OK', ok, 'feito este mês', 'cg') +
+    mkSt('Pendente', pending, 'este mês', 'cr')
 }
 
 // ═══════════════════════════════════════
@@ -318,7 +316,7 @@ function renderHid() {
   const tp = document.getElementById('htp').value
   const sts= document.getElementById('hsts').value
   const data = sortByNum(HID).filter(h => {
-    const s = getStatus(h.pi, false)
+    const s = getStatusHid(h.checklist)
     if (q  && ![h.num, h.loc, h.mk, h.descricao, h.obs].filter(Boolean).join(' ').toLowerCase().includes(q)) return false
     if (tp  && h.tp !== tp) return false
     if (sts && s   !== sts) return false
@@ -341,7 +339,7 @@ function renderHid() {
   }
   const isAdminH = perfil?.role === 'admin'
   el.innerHTML = data.map(h => {
-    const s = getStatus(h.pi, false)
+    const s = getStatusHid(h.checklist)
     const fotoHtml = h.foto_url ? `<button class="btn bout bsm" style="margin-bottom:8px;font-size:11px" onclick="verFoto('${h.foto_url}','${h.num}')">📷 Ver Foto</button>` : ''
     const delBtn = isAdminH ? `<button class="bd" data-id="${h.id}" data-act="del-hid">🗑️ Excluir</button>` : ''
     return `<div class="card ${s}">
@@ -722,7 +720,7 @@ document.getElementById('btn-salva-hid').addEventListener('click', async () => {
     const numRawH = gv('hf-num').trim(), tp = gv('hf-tp'), pi = gv('hf-pi')
     const setor   = document.getElementById('hf-setor').value
 
-    if (!numRawH||!tp||!setor||!pi) { toast('⚠️ Preencha os campos obrigatórios'); reativar(); return }
+    if (!numRawH||!tp||!setor) { toast('⚠️ Preencha os campos obrigatórios'); reativar(); return }
 
     const num = 'HID-' + String(parseInt(numRawH,10)).padStart(3,'0')
     const loc = montarLocal('hid')
@@ -808,8 +806,8 @@ function renderRel() {
   const eWarn = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'warn')
   const eVenc = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger')
   const eMan  = EXT.filter(e => e.em_manut)
-  const hVenc = HID.filter(h => getStatus(h.pi, false) === 'danger')
-  const hWarn = HID.filter(h => getStatus(h.pi, false) === 'warn')
+  const hVenc = HID.filter(h => getStatusHid(h.checklist) === 'danger')
+  const hWarn = HID.filter(h => getStatusHid(h.checklist) === 'warn')
 
   let h = `<div style="background:#7B241C;color:#fff;border-radius:12px;padding:14px;margin-bottom:14px">
     <div style="font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px">Hospital Regional de Santa Maria</div>

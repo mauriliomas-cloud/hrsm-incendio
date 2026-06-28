@@ -1,4 +1,4 @@
-import { fmm, fdt, sortByNum, getStatus } from './utils.js'
+import { fmm, fdt, sortByNum, getStatus, getStatusHid } from './utils.js'
 
 function cls(c) {
   const key = (c || '').replace('₂','2').toLowerCase()
@@ -29,8 +29,8 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
   const eWarn = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'warn')
   const eVenc = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger')
   const eMan  = EXT.filter(e => e.em_manut)
-  const hVenc = HID.filter(h => getStatus(h.pi, false) === 'danger')
-  const hWarn = HID.filter(h => getStatus(h.pi, false) === 'warn')
+  const hVenc = HID.filter(h => getStatusHid(h.checklist) === 'danger')
+  const hWarn = HID.filter(h => getStatusHid(h.checklist) === 'warn')
 
   const css = `
     * { box-sizing:border-box; margin:0; padding:0 }
@@ -97,8 +97,8 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
     <div class="sc" style="border-color:#EAFAF1"><div class="sl">ABC</div><div class="sv" style="color:#1E8449">${abc}</div><div class="ss">pó químico ABC</div></div>
     <div class="sc" style="border-color:#F4ECF7"><div class="sl">CO₂</div><div class="sv" style="color:#6C3483">${co2}</div><div class="ss">gás carbônico</div></div>
     <div class="sc"><div class="sl">Total Hidrantes</div><div class="sv">${HID.length}</div><div class="ss">cadastrados</div></div>
-    <div class="sc cr"><div class="sl">Hid. Vencidos</div><div class="sv">${hVenc.length}</div><div class="ss">urgente</div></div>
-    <div class="sc ca"><div class="sl">Hid. Atenção</div><div class="sv">${hWarn.length}</div><div class="ss">60 dias</div></div>
+    <div class="sc cr"><div class="sl">Checklist Pendente</div><div class="sv">${hVenc.length}</div><div class="ss">este mês</div></div>
+    <div class="sc cg"><div class="sl">Checklist OK</div><div class="sv">${HID.length - hVenc.length}</div><div class="ss">feito este mês</div></div>
   </div>`
 
   // Manutenção
@@ -228,7 +228,7 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
   ].map(th).join('')}</tr></thead><tbody>`
   if (HID.length) {
     sortByNum(HID).forEach(h => {
-      const s = getStatus(h.pi, false)
+      const s = getStatusHid(h.checklist)
       const corData = s==='danger'?'#C0392B':s==='warn'?'#D68910':''
       b += `<tr>
         ${td('<b>'+h.num+'</b>')}
