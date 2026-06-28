@@ -45,7 +45,7 @@ export async function login(email, senha) {
 }
 
 /** Logout */
-export async function logout() {
+export async function logout(silencioso = false) {
   meuToken = null
   await supabase.auth.signOut()
 }

@@ -81,11 +81,15 @@ async function iniciarApp() {
 
     // Verifica sessão a cada 5 segundos
     const intervaloSessao = setInterval(async () => {
+      // Se não tem sessão ativa, para o intervalo silenciosamente
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { clearInterval(intervaloSessao); return }
+
       const { verificarSessao } = await import('./auth.js')
       const valida = await verificarSessao()
       if (!valida) {
         clearInterval(intervaloSessao)
-        toast('⚠️ Sua sessão foi encerrada em outro dispositivo.')
+        toast('⚠️ Sessão encerrada em outro dispositivo.')
         setTimeout(async () => {
           const { logout } = await import('./auth.js')
           await logout()
