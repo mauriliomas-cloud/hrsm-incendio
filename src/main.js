@@ -1111,6 +1111,7 @@ async function renderAdm() {
     users.forEach(u => {
       const st  = statusOnline(u.ultimo_acesso)
       const ehEu = u.id === perfil.id
+      const ehMaster = u.email === 'maurilio.mas@gmail.com' || u.role === 'admin' && u.nome === 'Administrador HRSM'
       const bloq  = u.bloqueado
       h += `<div class="urow">
         <div class="uav2" style="${bloq ? 'background:#FADBD8;color:#C0392B' : ''}">${(u.nome||'?').charAt(0).toUpperCase()}</div>
@@ -1125,7 +1126,7 @@ async function renderAdm() {
             <span style="font-size:10px;color:${st.cor}">${st.label}</span>
           </div>
         </div>
-        ${!ehEu ? `
+        ${!ehEu && !ehMaster ? `
         <div style="display:flex;flex-direction:column;gap:5px">
           <button class="udel" data-uid="${u.id}" data-nome="${u.nome||''}" 
             style="height:30px;padding:0 10px;border:1.5px solid var(--redl);background:var(--redl);color:var(--red);border-radius:7px;cursor:pointer;font-size:11px;font-weight:600">
@@ -1135,7 +1136,7 @@ async function renderAdm() {
             style="height:30px;padding:0 10px;border:1.5px solid ${bloq?'var(--greenl)':'var(--amberl)'};background:${bloq?'var(--greenl)':'var(--amberl)'};color:${bloq?'var(--green)':'var(--amber)'};border-radius:7px;cursor:pointer;font-size:11px;font-weight:600">
             ${bloq ? '🔓 Desbloquear' : '🔒 Bloquear'}
           </button>
-        </div>` : ''}
+        </div>` : ehMaster ? `<span style="font-size:10px;color:var(--muted);font-style:italic">🛡️ Protegido</span>` : ''}
       </div>`
     })
     h += `<div style="padding:12px 13px"><button class="btn bgreen bfull" id="btn-open-nu">＋ Novo Usuário</button></div>`
