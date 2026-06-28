@@ -35,7 +35,7 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
   const css = `
     * { box-sizing:border-box; margin:0; padding:0 }
     body { font-family: Arial, Helvetica, sans-serif; font-size:10pt; color:#111; background:#fff }
-    .page { padding:15mm 18mm }
+    .page { padding:8mm 10mm }
     table { width:100%; border-collapse:collapse; margin-bottom:6mm; page-break-inside:auto }
     thead { display:table-header-group }
     tr { page-break-inside:avoid }
@@ -60,7 +60,7 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
     @media print {
       body { -webkit-print-color-adjust:exact; print-color-adjust:exact }
       h2 { page-break-after:avoid }
-      @page { size: A4 landscape; margin: 10mm 15mm }
+      @page { size: A4 landscape; margin: 5mm 8mm }
     }
   `
 
@@ -231,4 +231,12 @@ export function baixarRelatorio(EXT, HID, nomeUsuario) {
   a.href = url; a.download = nome; a.style.display = 'none'
   document.body.appendChild(a); a.click()
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 1500)
+}
+
+export function abrirRelatorio(EXT, HID, nomeUsuario) {
+  const html = gerarRelatorio(EXT, HID, nomeUsuario)
+  const blob = new Blob([html], { type:'text/html;charset=utf-8' })
+  const url  = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+  setTimeout(() => URL.revokeObjectURL(url), 5000)
 }

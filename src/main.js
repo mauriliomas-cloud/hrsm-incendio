@@ -5,7 +5,7 @@ import {
   listarHidrantes,  inserirHidrante,  atualizarHidrante,  deletarHidrante, escutarHidrantes
 } from './db.js'
 import { fmm, fdt, sortByNum, getStatus, stBadge, clsBadge, toast, confirmar } from './utils.js'
-import { baixarRelatorio } from './relatorio.js'
+import { baixarRelatorio, abrirRelatorio } from './relatorio.js'
 
 // ═══════════════════════════════════════
 // ESTADO GLOBAL
@@ -160,7 +160,10 @@ document.getElementById('user-btn').addEventListener('click', () => abrirOv('ov-
 document.getElementById('btn-ir-adm').addEventListener('click', () => irPg('adm'))
 document.getElementById('btn-rel-dl').addEventListener('click', () => {
   baixarRelatorio(EXT, HID, perfil?.nome || '—')
-  toast('📄 Relatório gerado! Abra o arquivo para imprimir.', 'ok')
+  toast('📄 Relatório gerado!', 'ok')
+})
+document.getElementById('btn-rel-ver').addEventListener('click', () => {
+  abrirRelatorio(EXT, HID, perfil?.nome || '—')
 })
 
 // ═══════════════════════════════════════
