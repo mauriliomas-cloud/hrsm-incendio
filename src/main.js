@@ -352,19 +352,20 @@ function sv(id, v) { const el = document.getElementById(id); if(el) el.value = v
 // ═══════════════════════════════════════
 const LOCAIS = {
   terreo: [
-    'Almoxarifado','Anatomia','APC','Auditório','Banco de Leite','Banco de Sangue',
+    'Almoxarifado','Ambulatório Bucomaxilo','Anatomia','APC','Auditório',
+    'Banco de Leite','Banco de Sangue',
     'Centro Cirúrgico Externo','Centro Cirúrgico Interno',
     'Centro Obstétrico Externo','Centro Obstétrico Interno',
     'CME Externo','CME Interno','Copa — Centro Cirúrgico','Copa dos Vigilantes',
     'Corredor Central','Corredor da Administração',
     'Corredor — Fisioterapia e Anatomia',
     'Corredor — Pronto-Socorro Infantil','Corredor — Pronto-Socorro / Triagem',
-    'Espaço Lúdico','Farmácia','Fisioterapia',
+    'Espaço Lúdico e Gerência de Emergências — PS','Farmácia','Fisioterapia',
     'Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C',
-    'Hotelaria','Laboratório','Núcleo de Mobilidade (NUMOB)',
+    'Hotelaria','Jardim da Odontologia','Laboratório','Núcleo de Mobilidade (NUMOB)',
     'Observação Feminina — Pronto-Socorro','Observação Masculina — Pronto-Socorro',
-    'Recepção — Ambulatório','Recepção — Pronto-Socorro',
-    'Refeitório','Salão do Auditório','UTI Neonatal'
+    'Radiologia','Recepção — Ambulatório','Recepção do Laboratório',
+    'Recepção — Pronto-Socorro','Refeitório','Salão do Auditório','UTI Neonatal'
   ],
   andar: [
     'Corredor Sul','Corredor AB','Corredor BC','Corredor Norte',
@@ -372,6 +373,10 @@ const LOCAIS = {
   ],
   torre: ['Torre A','Torre B','Torre C'],
   mezanino: ['Ala Norte','Ala Sul'],
+  subsolo: [
+    'Casa de Bombas','Corredor — Grupo Gerador','Corredor — Subestação',
+    'Quadros Gerais de Distribuição Elétrica','Sala de Nobreak'
+  ],
   externa: [
     'Anexo','Área de Gases — Oxigênio','Caldeira Interna','Depósito',
     'Guarita — Área de Gases','Guarita — Portaria Central','Guarita — Pronto-Socorro',
@@ -390,6 +395,7 @@ function filtrarSetor(tipo) {
   else if (['1andar','2andar','3andar','4andar','5andar'].includes(andar)) lista = LOCAIS.andar
   else if (andar === 'torre')    lista = LOCAIS.torre
   else if (andar === 'mezanino') lista = LOCAIS.mezanino
+  else if (andar === 'subsolo')  lista = LOCAIS.subsolo
   else if (andar === 'externa')  lista = LOCAIS.externa
 
   // Admin pode adicionar "Outro"
@@ -482,7 +488,7 @@ const SETORES_PREDIO = ['terreo','andar','torre','mezanino','externa']
 const ANDAR_MAP = {
   'Térreo':'terreo','1º Andar':'1andar','2º Andar':'2andar',
   '3º Andar':'3andar','4º Andar':'4andar','5º Andar':'5andar',
-  'Torre':'torre','Mezanino':'mezanino','Área Externa':'externa'
+  'Torre':'torre','Mezanino':'mezanino','Subsolo':'subsolo','Área Externa':'externa'
 }
 
 function separarLocal(loc) {
