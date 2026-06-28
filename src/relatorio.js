@@ -133,8 +133,9 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
 
   // Hidrantes com itens fora de conformidade
   const hNaoConformes = HID.filter(h => {
-    const hist = Array.isArray(h.checklist) ? h.checklist : []
-    if (!hist.length) return false
+    let hist = h.checklist
+    if (typeof hist === 'string') { try { hist = JSON.parse(hist) } catch(e) { return false } }
+    if (!Array.isArray(hist) || !hist.length) return false
     const ult = hist[hist.length - 1]
     return ['Ruim','Regular','Ausente'].some(v =>
       [ult.mang1, ult.mang2, ult.chave, ult.esguicho, ult.abrigo, ult.registro, ult.lacre].includes(v)
@@ -145,16 +146,17 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
   if (hNaoConformes.length) {
     b += `<table><thead><tr>${['Nº','Local','Item','Status','Data Inspeção','Responsável'].map(th).join('')}</tr></thead><tbody>`
     sortByNum(hNaoConformes).forEach(h => {
-      const hist = Array.isArray(h.checklist) ? h.checklist : []
+      let hist = h.checklist
+      if (typeof hist === 'string') { try { hist = JSON.parse(hist) } catch(e) { hist = [] } }
       const ult  = hist[hist.length - 1]
       const itens = [
-        { nome: 'Mangueira 1', val: ult.mang1 },
-        { nome: 'Mangueira 2', val: ult.mang2 },
-        { nome: 'Chave',       val: ult.chave },
-        { nome: 'Esguicho',    val: ult.esguicho },
-        { nome: 'Abrigo/Caixa',val: ult.abrigo },
-        { nome: 'Registro',    val: ult.registro },
-        { nome: 'Lacre',       val: ult.lacre },
+        { nome: 'Mangueira 1',  val: ult.mang1 },
+        { nome: 'Mangueira 2',  val: ult.mang2 },
+        { nome: 'Chave',        val: ult.chave },
+        { nome: 'Esguicho',     val: ult.esguicho },
+        { nome: 'Abrigo/Caixa', val: ult.abrigo },
+        { nome: 'Registro',     val: ult.registro },
+        { nome: 'Lacre',        val: ult.lacre },
       ].filter(i => ['Ruim','Regular','Ausente'].includes(i.val))
 
       itens.forEach((item, idx) => {
