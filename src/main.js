@@ -253,10 +253,14 @@ function renderExt() {
         <div class="cf"><div class="fl">Capacidade</div><div class="fv">${e.cap||'—'}</div></div>
         <div class="cf"><div class="fl">Marca</div><div class="fv">${e.mk||'—'}</div></div>
         <div class="cf full"><div class="fl">Local</div><div class="fv">${e.loc}</div></div>
-        <div class="cf"><div class="fl">Validade Carga</div><div class="fv">${fmm(e.validade)}</div></div>
-        <div class="cf"><div class="fl">Próxima Troca</div><div class="fv">${fmm(e.troca)}</div></div>
-        <div class="cf"><div class="fl">Hidrostático</div><div class="fv">${e.hdt||'—'}</div></div>
-        <div class="cf"><div class="fl">Nº Hid.</div><div class="fv">${e.hnum||'—'}</div></div>
+        <div class="cf"><div class="fl">Última Recarga</div><div class="fv">${fmm(e.ult_recarga)}</div></div>
+        <div class="cf"><div class="fl">Próxima Recarga</div><div class="fv">${fmm(e.validade)}</div></div>
+        <div class="cf"><div class="fl">Último Teste Hid.</div><div class="fv">${fmm(e.hdt)}</div></div>
+        <div class="cf"><div class="fl">Próximo Teste Hid.</div><div class="fv">${fmm(e.troca)}</div></div>
+        <div class="cf"><div class="fl">Nº Laudo Hid.</div><div class="fv">${e.hnum||'—'}</div></div>
+        <div class="cf"><div class="fl">Ano Fabricação</div><div class="fv">${e.fab||'—'}</div></div>
+        <div class="cf"><div class="fl">Nº Lacre</div><div class="fv">${e.lacre||'—'}</div></div>
+        <div class="cf"><div class="fl">Empresa</div><div class="fv">${e.empresa||'—'}</div></div>
         ${e.obs ? `<div class="cf full"><div class="fl">Obs.</div><div class="fv">${e.obs}</div></div>` : ''}
       </div>
       <div class="cupd"><span>👤 ${e.upd_by||'—'}</span><span>🕐 ${fdt(e.upd_at)}</span></div>
@@ -526,7 +530,11 @@ function toggleAndar() {} // compatibilidade
 function abrirExt() {
   editExtId = null
   document.getElementById('tit-ext').textContent = 'Novo Extintor'
-  ;['ef-num','ef-cls','ef-cap','ef-mk','ef-andar','ef-setor','ef-desc','ef-val','ef-troca','ef-hdt','ef-hnum','ef-obs'].forEach(id => sv(id,''))
+  ;['ef-num','ef-cls','ef-cap','ef-mk','ef-andar','ef-setor','ef-desc',
+    'ef-ult-recarga','ef-val','ef-troca','ef-hdt','ef-hnum',
+    'ef-fab','ef-lacre','ef-empresa','ef-obs'
+  ].forEach(id => sv(id,''))
+  document.getElementById('ef-foto-preview').style.display = 'none'
   abrirOv('ov-ext')
 }
 
@@ -543,7 +551,10 @@ document.getElementById('btn-salva-ext').addEventListener('click', async () => {
   const payload = {
     num, cls, loc, validade: val,
     cap: gv('ef-cap'), mk: gv('ef-mk'), descricao: gv('ef-desc'),
-    troca: gv('ef-troca'), hdt: gv('ef-hdt'), hnum: gv('ef-hnum'), obs: gv('ef-obs'),
+    ult_recarga: gv('ef-ult-recarga'),
+    troca: gv('ef-troca'), hdt: gv('ef-hdt'), hnum: gv('ef-hnum'),
+    fab: gv('ef-fab'), lacre: gv('ef-lacre'), empresa: gv('ef-empresa'),
+    obs: gv('ef-obs'),
     upd_by: perfil?.nome || '—'
   }
   try {
@@ -572,7 +583,10 @@ function editExt(id) {
   filtrarSetor('ext')
   setTimeout(function(){ sv('ef-setor', loc.setor) }, 50)
   sv('ef-desc', e.descricao); sv('ef-val', e.validade)
-  sv('ef-troca', e.troca); sv('ef-hdt', e.hdt); sv('ef-hnum', e.hnum); sv('ef-obs', e.obs)
+  sv('ef-ult-recarga', e.ult_recarga)
+  sv('ef-troca', e.troca); sv('ef-hdt', e.hdt); sv('ef-hnum', e.hnum)
+  sv('ef-fab', e.fab); sv('ef-lacre', e.lacre); sv('ef-empresa', e.empresa)
+  sv('ef-obs', e.obs)
   // Mostra foto existente
   if (e.foto_url) {
     document.getElementById('ef-foto-img').src = e.foto_url
