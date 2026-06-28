@@ -5,13 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#7B241C">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>HRSM — Incêndio</title>
+  <title>HRSM — Brigada de Incêndio</title>
   <link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
 
+<!-- ══ TELA INICIAL ══ -->
+<div id="ws" style="
+  position:fixed;inset:0;z-index:999;
+  display:flex;flex-direction:column;
+  background:#000;overflow:hidden
+">
+  <!-- Foto do hospital -->
+  <div style="
+    flex:1;position:relative;
+    background:url('https://bwumbwmwsmtqjmlzvpnx.supabase.co/storage/v1/object/public/fotos/HRSM.png') center/cover no-repeat;
+  ">
+    <!-- Overlay escuro gradiente -->
+    <div style="
+      position:absolute;inset:0;
+      background:linear-gradient(to bottom, rgba(0,0,0,.3) 0%, rgba(0,0,0,.7) 100%)
+    "></div>
+
+    <!-- Conteúdo sobre a foto -->
+    <div style="
+      position:absolute;inset:0;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      padding:24px;text-align:center;color:#fff
+    ">
+      <div style="font-size:52px;margin-bottom:12px">🔥</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.8;margin-bottom:8px">Hospital Regional de Santa Maria</div>
+      <h1 style="font-size:24px;font-weight:700;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.5)">Brigada de Incêndio</h1>
+      <p style="font-size:13px;opacity:.8;max-width:280px;line-height:1.5">Sistema de Controle de Extintores e Hidrantes</p>
+    </div>
+  </div>
+
+  <!-- Botão entrar -->
+  <div style="
+    background:#fff;
+    padding:28px 24px 36px;
+    border-radius:24px 24px 0 0;
+    margin-top:-24px;
+  ">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:13px;font-weight:700;color:#7B241C;text-transform:uppercase;letter-spacing:1px">CBMDF · IGESDF</div>
+      <div style="font-size:11px;color:#888;margin-top:4px">Acesso restrito a usuários autorizados</div>
+    </div>
+    <button id="btn-ir-login" style="
+      width:100%;height:52px;
+      background:linear-gradient(135deg,#C0392B,#7B241C);
+      color:#fff;border:none;border-radius:14px;
+      font-size:16px;font-weight:700;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      box-shadow:0 4px 16px rgba(192,57,43,.4)
+    ">🔥 Acessar o Sistema</button>
+  </div>
+</div>
+
 <!-- ══ LOGIN ══ -->
-<div id="ls">
+<div id="ls" style="display:none">
   <div class="lbox">
     <div class="lic">🔥</div>
     <h1>Combate a Incêndio</h1>

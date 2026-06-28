@@ -14,6 +14,15 @@ let EXT = [], HID = [], perfil = null
 let curPg = 'ext', editExtId = null, editHidId = null, manId = null
 
 // ═══════════════════════════════════════
+// TELA INICIAL
+// ═══════════════════════════════════════
+document.getElementById('btn-ir-login')?.addEventListener('click', () => {
+  document.getElementById('ws').style.display = 'none'
+  document.getElementById('ls').style.display  = 'flex'
+  setTimeout(() => document.getElementById('lu')?.focus(), 300)
+})
+
+// ═══════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════
 document.getElementById('lbtn').addEventListener('click', async () => {
@@ -41,10 +50,13 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 // Escuta mudanças de sessão
 onAuthChange(async session => {
   if (session) {
+    document.getElementById('ws').style.display = 'none'
+    document.getElementById('ls').style.display = 'none'
     await iniciarApp()
   } else {
     document.getElementById('app').style.display = 'none'
-    document.getElementById('ls').style.display  = 'flex'
+    document.getElementById('ws').style.display  = 'flex'
+    document.getElementById('ls').style.display  = 'none'
     document.getElementById('lbtn').textContent  = 'Entrar →'
   }
 })
