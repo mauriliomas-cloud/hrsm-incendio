@@ -564,36 +564,37 @@ function abrirExt() {
 }
 
 document.getElementById('btn-salva-ext').addEventListener('click', async () => {
-  const numRaw = gv('ef-num').trim()
-  const cls    = gv('ef-cls')
-  const val    = gv('ef-val')
-  const setor  = document.getElementById('ef-setor').value
+  const btn = document.getElementById('btn-salva-ext')
+  if (btn.disabled) return
+  btn.disabled = true
+  btn.textContent = '⏳ Salvando…'
 
-  if (!numRaw||!cls||!setor||!val) { toast('⚠️ Preencha os campos obrigatórios'); return }
-
-  // Formata número com 3 dígitos + prefixo EXT
-  const num = 'EXT-' + String(parseInt(numRaw,10)).padStart(3,'0')
-
-  // Formata capacidade com L ou KG
-  const capRaw = gv('ef-cap').replace(/[^0-9.,]/g,'').trim()
-  const cap = capRaw ? (cls === 'AP' ? capRaw + 'L' : capRaw + 'KG') : ''
-
-  const loc = montarLocal('ext')
-
-  // Verifica número duplicado
-  const duplicado = EXT.find(e => e.num === num && e.id !== editExtId)
-  if (duplicado) { toast('⚠️ Já existe um extintor com o número ' + num); return }
-
-  const payload = {
-    num, cls, loc, validade: val,
-    cap, mk: gv('ef-mk'), descricao: gv('ef-desc'),
-    ult_recarga: gv('ef-ult-recarga'),
-    troca: gv('ef-troca'), hdt: gv('ef-hdt'), hnum: gv('ef-hnum'),
-    fab: gv('ef-fab'), lacre: gv('ef-lacre'), empresa: gv('ef-empresa'),
-    obs: gv('ef-obs'),
-    upd_by: perfil?.nome || '—'
-  }
   try {
+    const numRaw = gv('ef-num').trim()
+    const cls    = gv('ef-cls')
+    const val    = gv('ef-val')
+    const setor  = document.getElementById('ef-setor').value
+
+    if (!numRaw||!cls||!setor||!val) { toast('⚠️ Preencha os campos obrigatórios'); return }
+
+    const num = 'EXT-' + String(parseInt(numRaw,10)).padStart(3,'0')
+    const capRaw = gv('ef-cap').replace(/[^0-9.,]/g,'').trim()
+    const cap = capRaw ? (cls === 'AP' ? capRaw + 'L' : capRaw + 'KG') : ''
+    const loc = montarLocal('ext')
+
+    const duplicado = EXT.find(e => e.num === num && e.id !== editExtId)
+    if (duplicado) { toast('⚠️ Já existe um extintor com o número ' + num); return }
+
+    const payload = {
+      num, cls, loc, validade: val,
+      cap, mk: gv('ef-mk'), descricao: gv('ef-desc'),
+      ult_recarga: gv('ef-ult-recarga'),
+      troca: gv('ef-troca'), hdt: gv('ef-hdt'), hnum: gv('ef-hnum'),
+      fab: gv('ef-fab'), lacre: gv('ef-lacre'), empresa: gv('ef-empresa'),
+      obs: gv('ef-obs'),
+      upd_by: perfil?.nome || '—'
+    }
+
     let saved
     if (editExtId) {
       saved = await atualizarExtintor(editExtId, payload)
@@ -602,11 +603,14 @@ document.getElementById('btn-salva-ext').addEventListener('click', async () => {
       saved = await inserirExtintor({ ...payload, em_manut: false, manut_hist: [] })
       toast('✅ Extintor cadastrado!', 'ok')
     }
-    // Upload da foto se selecionada
     const fotoUrl = await uploadFoto('ext', saved.id)
     if (fotoUrl) await atualizarExtintor(saved.id, { foto_url: fotoUrl })
     fecharOv('ov-ext'); await carregarExt()
   } catch(e) { toast('Erro: ' + e.message, 'err') }
+  finally {
+    btn.disabled = false
+    btn.textContent = '💾 Salvar'
+  }
 })
 
 function editExt(id) {
@@ -707,26 +711,32 @@ function abrirHid() {
 }
 
 document.getElementById('btn-salva-hid').addEventListener('click', async () => {
-  const numRawH = gv('hf-num').trim(), tp = gv('hf-tp'), pi = gv('hf-pi')
-  const setor   = document.getElementById('hf-setor').value
+  const btn = document.getElementById('btn-salva-hid')
+  if (btn.disabled) return
+  btn.disabled = true
+  btn.textContent = '⏳ Salvando…'
 
-  if (!numRawH||!tp||!setor||!pi) { toast('⚠️ Preencha os campos obrigatórios'); return }
+  const reativar = () => { btn.disabled = false; btn.textContent = '💾 Salvar' }
 
-  // Formata número com 3 dígitos + prefixo HID
-  const num = 'HID-' + String(parseInt(numRawH,10)).padStart(3,'0')
-  const loc = montarLocal('hid')
-
-  // Verifica número duplicado
-  const duplicadoH = HID.find(h => h.num === num && h.id !== editHidId)
-  if (duplicadoH) { toast('⚠️ Já existe um hidrante com o número ' + num); return }
-
-  const payload = {
-    num, tp, loc, pi,
-    mk:gv('hf-mk'), dm:gv('hf-dm'), descricao:gv('hf-desc'),
-    ui:gv('hf-ui'), pt:gv('hf-pt'), pv:gv('hf-pv'), obs:gv('hf-obs'),
-    upd_by: perfil?.nome || '—'
-  }
   try {
+    const numRawH = gv('hf-num').trim(), tp = gv('hf-tp'), pi = gv('hf-pi')
+    const setor   = document.getElementById('hf-setor').value
+
+    if (!numRawH||!tp||!setor||!pi) { toast('⚠️ Preencha os campos obrigatórios'); reativar(); return }
+
+    const num = 'HID-' + String(parseInt(numRawH,10)).padStart(3,'0')
+    const loc = montarLocal('hid')
+
+    const duplicadoH = HID.find(h => h.num === num && h.id !== editHidId)
+    if (duplicadoH) { toast('⚠️ Já existe um hidrante com o número ' + num); reativar(); return }
+
+    const payload = {
+      num, tp, loc, pi,
+      mk:gv('hf-mk'), dm:gv('hf-dm'), descricao:gv('hf-desc'),
+      ui:gv('hf-ui'), pt:gv('hf-pt'), pv:gv('hf-pv'), obs:gv('hf-obs'),
+      upd_by: perfil?.nome || '—'
+    }
+
     let saved
     if (editHidId) { saved = await atualizarHidrante(editHidId, payload); toast('✅ Hidrante atualizado!', 'ok') }
     else           { saved = await inserirHidrante(payload);               toast('✅ Hidrante cadastrado!', 'ok') }
@@ -734,6 +744,10 @@ document.getElementById('btn-salva-hid').addEventListener('click', async () => {
     if (fotoUrl) await atualizarHidrante(saved.id, { foto_url: fotoUrl })
     fecharOv('ov-hid'); await carregarHid()
   } catch(e) { toast('Erro: ' + e.message, 'err') }
+  finally {
+    btn.disabled = false
+    btn.textContent = '💾 Salvar'
+  }
 })
 
 function editHid(id) {
