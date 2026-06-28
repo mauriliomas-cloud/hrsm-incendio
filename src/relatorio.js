@@ -80,6 +80,11 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
     </div>
   </div>`
 
+  const ap  = EXT.filter(e => e.cls === 'AP').length
+  const bc  = EXT.filter(e => e.cls === 'BC').length
+  const abc = EXT.filter(e => e.cls === 'ABC').length
+  const co2 = EXT.filter(e => e.cls === 'CO₂').length
+
   // Resumo
   b += `<div class="resumo">
     <div class="sc"><div class="sl">Total Extintores</div><div class="sv">${EXT.length}</div><div class="ss">cadastrados</div></div>
@@ -87,6 +92,10 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
     <div class="sc ca"><div class="sl">Atenção</div><div class="sv">${eWarn.length}</div><div class="ss">60 dias</div></div>
     <div class="sc cr"><div class="sl">Vencidos</div><div class="sv">${eVenc.length}</div><div class="ss">urgente</div></div>
     <div class="sc co"><div class="sl">Manutenção</div><div class="sv">${eMan.length}</div><div class="ss">fora serviço</div></div>
+    <div class="sc" style="border-color:#EBF5FB"><div class="sl">Classe AP</div><div class="sv" style="color:#1A5276">${ap}</div><div class="ss">água</div></div>
+    <div class="sc" style="border-color:#FEF9E7"><div class="sl">Classe BC</div><div class="sv" style="color:#7D6608">${bc}</div><div class="ss">pó BC</div></div>
+    <div class="sc" style="border-color:#EAFAF1"><div class="sl">Classe ABC</div><div class="sv" style="color:#1E8449">${abc}</div><div class="ss">pó ABC</div></div>
+    <div class="sc" style="border-color:#F4ECF7"><div class="sl">CO₂</div><div class="sv" style="color:#6C3483">${co2}</div><div class="ss">gás carbônico</div></div>
     <div class="sc"><div class="sl">Total Hidrantes</div><div class="sv">${HID.length}</div><div class="ss">cadastrados</div></div>
     <div class="sc cr"><div class="sl">Hid. Vencidos</div><div class="sv">${hVenc.length}</div><div class="ss">urgente</div></div>
     <div class="sc ca"><div class="sl">Hid. Atenção</div><div class="sv">${hWarn.length}</div><div class="ss">60 dias</div></div>

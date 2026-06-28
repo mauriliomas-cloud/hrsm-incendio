@@ -190,12 +190,21 @@ function stExt() {
   const warn = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'warn').length
   const venc = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger').length
   const man  = EXT.filter(e => e.em_manut).length
+  const ap   = EXT.filter(e => e.cls === 'AP').length
+  const bc   = EXT.filter(e => e.cls === 'BC').length
+  const abc  = EXT.filter(e => e.cls === 'ABC').length
+  const co2  = EXT.filter(e => e.cls === 'CO₂').length
+
   document.getElementById('st-ext').innerHTML =
     mkSt('Total', EXT.length, 'cadastrados', '') +
     mkSt('Em dia', ok, 'OK', 'cg') +
     mkSt('Atenção', warn, '60 dias', 'ca') +
     mkSt('Vencidos', venc, 'urgente', 'cr') +
-    mkSt('Manutenção', man, 'fora serviço', 'co')
+    mkSt('Manutenção', man, 'fora serviço', 'co') +
+    `<div class="sc" style="border-color:#EBF5FB"><div class="sl">Classe AP</div><div class="sv" style="color:#1A5276">${ap}</div><div class="ss">água</div></div>` +
+    `<div class="sc" style="border-color:#FEF9E7"><div class="sl">Classe BC</div><div class="sv" style="color:#7D6608">${bc}</div><div class="ss">pó BC</div></div>` +
+    `<div class="sc" style="border-color:#EAFAF1"><div class="sl">Classe ABC</div><div class="sv" style="color:#1E8449">${abc}</div><div class="ss">pó ABC</div></div>` +
+    `<div class="sc" style="border-color:#F4ECF7"><div class="sl">CO₂</div><div class="sv" style="color:#6C3483">${co2}</div><div class="ss">gás carbônico</div></div>`
 }
 function stHid() {
   const ok   = HID.filter(h => getStatus(h.pi, false) === 'ok').length
