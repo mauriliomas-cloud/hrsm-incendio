@@ -52,9 +52,9 @@ export async function logout() {
 
 /** Verifica se sessão ainda é válida */
 export async function verificarSessao() {
-  if (!meuToken) return false
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.user) return false
+  if (!meuToken) return true // Reload da página — considera válida até confirmar
 
   const { data } = await supabase
     .from('perfis')

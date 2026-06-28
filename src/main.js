@@ -80,10 +80,11 @@ async function iniciarApp() {
     }
 
     // Verifica sessão a cada 5 segundos
-    setInterval(async () => {
+    const intervaloSessao = setInterval(async () => {
       const { verificarSessao } = await import('./auth.js')
       const valida = await verificarSessao()
       if (!valida) {
+        clearInterval(intervaloSessao)
         toast('⚠️ Sua sessão foi encerrada em outro dispositivo.')
         setTimeout(async () => {
           const { logout } = await import('./auth.js')
