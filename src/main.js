@@ -807,7 +807,7 @@ function renderRel() {
   const eVenc = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger')
   const eMan  = EXT.filter(e => e.em_manut)
   const hVenc = HID.filter(h => getStatusHid(h.checklist) === 'danger')
-  const hWarn = HID.filter(h => getStatusHid(h.checklist) === 'warn')
+  const hOk   = HID.filter(h => getStatusHid(h.checklist) === 'ok')
 
   let h = `<div style="background:#7B241C;color:#fff;border-radius:12px;padding:14px;margin-bottom:14px">
     <div style="font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px">Hospital Regional de Santa Maria</div>
@@ -822,8 +822,8 @@ function renderRel() {
     ${mkSt('Vencidos',eVenc.length,'urgente','cr')}
     ${mkSt('Manutenção',eMan.length,'fora serviço','co')}
     ${mkSt('Hidrantes',HID.length,'total','')}
-    ${mkSt('OK',HID.filter(h=>getStatus(h.pi,false)==='ok').length,'em dia','cg')}
-    ${mkSt('Vencidos',hVenc.length,'urgente','cr')}
+    ${mkSt('Checklist OK',hOk.length,'este mês','cg')}
+    ${mkSt('Pendente',hVenc.length,'este mês','cr')}
   </div>`
 
   // Manutenção
@@ -857,9 +857,9 @@ function renderRel() {
     h += `</div>`
   }
   if (hVenc.length) {
-    h += `<div class="rcard"><div class="rhdr rdanger">🔴 Hidrantes — Inspeção Vencida (${hVenc.length})</div>`
+    h += `<div class="rcard"><div class="rhdr rdanger">🔴 Hidrantes — Checklist Pendente (${hVenc.length})</div>`
     sortByNum(hVenc).forEach(hh => {
-      h += `<div class="rrow"><div class="rnum">${hh.num}</div><div class="rloc">${hh.tp}<br>${hh.loc}</div><div><div class="rdt" style="color:var(--red)">${fmm(hh.pi)}</div><div class="rby">${hh.upd_by||'—'}</div></div></div>`
+      h += `<div class="rrow"><div class="rnum">${hh.num}</div><div class="rloc">${hh.tp}<br>${hh.loc}</div><div><div class="rby">${hh.upd_by||'—'}</div></div></div>`
     })
     h += `</div>`
   }
