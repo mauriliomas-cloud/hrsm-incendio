@@ -79,6 +79,13 @@ export function getStatusHid(checklist) {
   if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) return 'ok'
   return 'danger'
 }
+/** Badge HTML de status para hidrante */
+export function stBadgeHid(s) {
+  const L = { ok: '✅ Checklist OK', danger: '🔴 Pendente' }
+  const C = { ok: 'st-ok', danger: 'st-danger' }
+  return `<span class="badge-st ${C[s] || 'st-danger'}">${L[s] || s}</span>`
+}
+
 export function clsBadge(c) {
   const key = (c || '').replace('₂','2').toLowerCase()
   return `<span class="badge-cls cls-${key}">${c}</span>`

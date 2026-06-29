@@ -4,7 +4,7 @@ import {
   listarExtintores, inserirExtintor, atualizarExtintor, deletarExtintor, escutarExtintores,
   listarHidrantes,  inserirHidrante,  atualizarHidrante,  deletarHidrante, escutarHidrantes
 } from './db.js'
-import { fmm, fdt, sortByNum, getStatus, getStatusHid, stBadge, clsBadge, toast, confirmar } from './utils.js'
+import { fmm, fdt, sortByNum, getStatus, getStatusHid, stBadge, stBadgeHid, clsBadge, toast, confirmar } from './utils.js'
 import { baixarRelatorio, abrirRelatorio } from './relatorio.js'
 
 // ═══════════════════════════════════════
@@ -344,7 +344,7 @@ function renderHid() {
     const delBtn = isAdminH ? `<button class="bd" data-id="${h.id}" data-act="del-hid">🗑️ Excluir</button>` : ''
     return `<div class="card ${s}">
       ${fotoHtml}
-      <div class="chead"><div class="cnum">${h.num}</div><div class="cbadges">${stBadge(s)}</div></div>
+      <div class="chead"><div class="cnum">${h.num}</div><div class="cbadges">${stBadgeHid(s)}</div></div>
       <div class="cbody">
         <div class="cf"><div class="fl">Tipo</div><div class="fv">${h.tp}</div></div>
         <div class="cf"><div class="fl">Marca</div><div class="fv">${h.mk||'—'}</div></div>
@@ -874,8 +874,8 @@ function renderRel() {
 
   h += `<div class="rcard"><div class="rhdr rok">✅ Todos os Hidrantes (${HID.length})</div>`
   sortByNum(HID).forEach(hh => {
-    const s = getStatus(hh.pi, false)
-    h += `<div class="rrow"><div class="rnum">${hh.num}</div><div class="rloc">${hh.tp}<br>${hh.loc}</div><div>${stBadge(s)}<div class="rby">${hh.upd_by||'—'}</div></div></div>`
+    const s = getStatusHid(hh.checklist)
+    h += `<div class="rrow"><div class="rnum">${hh.num}</div><div class="rloc">${hh.tp}<br>${hh.loc}</div><div>${stBadgeHid(s)}<div class="rby">${hh.upd_by||'—'}</div></div></div>`
   })
   if (!HID.length) h += `<div class="na">Nenhum hidrante cadastrado.</div>`
   h += `</div>`
