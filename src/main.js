@@ -148,6 +148,7 @@ async function carregarHid() {
 // NAVEGAÇÃO
 // ═══════════════════════════════════════
 function irPg(p) {
+  const pgAnterior = curPg
   curPg = p
   document.querySelectorAll('.pg').forEach(el => el.classList.remove('on'))
   document.getElementById('pg-' + p)?.classList.add('on')
@@ -155,6 +156,16 @@ function irPg(p) {
     b.classList.toggle('on', b.dataset.pg === p)
   })
   document.getElementById('fab').style.display = (p === 'ext' || p === 'hid') ? 'flex' : 'none'
+
+  // Seleciona filtro de relatório automaticamente baseado na aba anterior
+  if (p === 'rel') {
+    const filtroAuto = pgAnterior === 'hid' ? 'hid-todos' : 'ext-todos'
+    document.querySelectorAll('.btn-rel-opt').forEach(b => {
+      b.classList.toggle('on', b.dataset.rel === filtroAuto)
+    })
+    relFiltro = filtroAuto
+  }
+
   if (p === 'ext') renderExt()
   if (p === 'hid') renderHid()
   if (p === 'rel') renderRel()
