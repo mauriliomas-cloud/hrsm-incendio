@@ -150,13 +150,34 @@
 
     <!-- RELATÓRIO -->
     <div id="pg-rel" class="pg">
-      <div class="sh">
-        <h2>📋 Relatório</h2>
+      <div class="sh"><h2>📋 Relatório</h2></div>
+
+      <div style="background:#fff;border:1.5px solid var(--bdr);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">🧯 Extintores</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <button class="btn-rel-opt on" data-rel="ext-todos">📋 Todos</button>
+          <button class="btn-rel-opt" data-rel="ext-venc">🔴 Vencidos</button>
+          <button class="btn-rel-opt" data-rel="ext-warn">⚠️ Atenção</button>
+          <button class="btn-rel-opt" data-rel="ext-manut">🔧 Manutenção</button>
+          <button class="btn-rel-opt" data-rel="ext-ap">🔵 AP</button>
+          <button class="btn-rel-opt" data-rel="ext-bc">🟡 BC</button>
+          <button class="btn-rel-opt" data-rel="ext-abc">🟢 ABC</button>
+          <button class="btn-rel-opt" data-rel="ext-co2">🟣 CO₂</button>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">💧 Hidrantes</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <button class="btn-rel-opt" data-rel="hid-todos">📋 Todos</button>
+          <button class="btn-rel-opt" data-rel="hid-pend">🔴 Pendentes</button>
+          <button class="btn-rel-opt" data-rel="hid-conf">⚠️ Não conformidade</button>
+        </div>
+
         <div style="display:flex;gap:8px">
-          <button class="btn bblue bsm" id="btn-rel-ver">👁️ Visualizar</button>
-          <button class="btn bout bsm" id="btn-rel-dl">⬇ Baixar</button>
+          <button class="btn bblue bfull" id="btn-rel-ver">👁️ Visualizar</button>
+          <button class="btn bout bfull" id="btn-rel-dl">⬇ Baixar</button>
         </div>
       </div>
+
       <div id="rel-body"></div>
     </div>
 

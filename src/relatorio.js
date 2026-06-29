@@ -21,16 +21,28 @@ function th(v) {
   return `<th style="padding:2.5mm 3mm;text-align:left;font-size:9pt;background:#7B241C;color:#fff">${v}</th>`
 }
 
-export function gerarRelatorio(EXT, HID, nomeUsuario) {
+export function gerarRelatorio(EXT, HID, nomeUsuario, filtro = 'ext-todos') {
   const now  = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' })
   const hora = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' })
 
-  const eOk   = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'ok')
-  const eWarn = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'warn')
-  const eVenc = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger')
-  const eMan  = EXT.filter(e => e.em_manut)
-  const hVenc = HID.filter(h => getStatusHid(h.checklist) === 'danger')
-  const hOk   = HID.filter(h => getStatusHid(h.checklist) === 'ok')
+  // Aplica filtro
+  let extF = EXT, hidF = HID, titulo = 'Relatório Completo'
+  if (filtro === 'ext-venc')  { extF = EXT.filter(e => getStatus(e.validade,e.em_manut)==='danger'); hidF=[]; titulo='🔴 Extintores Vencidos' }
+  else if (filtro === 'ext-warn')  { extF = EXT.filter(e => getStatus(e.validade,e.em_manut)==='warn'); hidF=[]; titulo='⚠️ Extintores com Atenção' }
+  else if (filtro === 'ext-manut') { extF = EXT.filter(e => e.em_manut); hidF=[]; titulo='🔧 Extintores em Manutenção' }
+  else if (filtro === 'ext-ap')    { extF = EXT.filter(e => e.cls==='AP'); hidF=[]; titulo='🔵 Extintores AP' }
+  else if (filtro === 'ext-bc')    { extF = EXT.filter(e => e.cls==='BC'); hidF=[]; titulo='🟡 Extintores BC' }
+  else if (filtro === 'ext-abc')   { extF = EXT.filter(e => e.cls==='ABC'); hidF=[]; titulo='🟢 Extintores ABC' }
+  else if (filtro === 'ext-co2')   { extF = EXT.filter(e => e.cls==='CO₂'); hidF=[]; titulo='🟣 Extintores CO₂' }
+  else if (filtro === 'hid-todos') { extF=[]; titulo='💧 Todos os Hidrantes' }
+  else if (filtro === 'hid-pend')  { extF=[]; hidF=HID.filter(h=>getStatusHid(h.checklist)==='danger'); titulo='🔴 Hidrantes com Checklist Pendente' }
+  else if (filtro === 'hid-conf')  { extF=[]; hidF=HID.filter(h=>{let hist=h.checklist;if(typeof hist==='string'){try{hist=JSON.parse(hist)}catch(e){return false}}if(!Array.isArray(hist)||!hist.length)return false;const ult=hist[hist.length-1];return['Ruim','Regular','Ausente'].some(v=>[ult.mang1,ult.mang2,ult.chave,ult.esguicho,ult.abrigo,ult.registro,ult.lacre].includes(v))}); titulo='⚠️ Hidrantes Fora de Conformidade' }
+
+  const eOk   = extF.filter(e => getStatus(e.validade, e.em_manut) === 'ok')
+  const eWarn = extF.filter(e => getStatus(e.validade, e.em_manut) === 'warn')
+  const eVenc = extF.filter(e => getStatus(e.validade, e.em_manut) === 'danger')
+  const eMan  = extF.filter(e => e.em_manut)
+  const hVenc = hidF.filter(h => getStatusHid(h.checklist) === 'danger')
 
   const css = `
     * { box-sizing:border-box; margin:0; padding:0 }
@@ -70,7 +82,7 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
   b += `<div class="cab">
     <div class="cab-left">
       <div class="org">Instituto de Gestão Estratégica de Saúde do DF — IGESDF</div>
-      <h1>🔥 Brigada de Incêndio</h1>
+      <h1>🔥 ${titulo}</h1>
       <div class="meta">Hospital Regional de Santa Maria — CBMDF</div>
     </div>
     <div class="cab-right">
@@ -186,15 +198,14 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
     b += `</tbody></table>`
   }
 
-  // Lista completa extintores
-  b += `<h2>📋 Lista Completa — Extintores (${EXT.length})</h2>`
-  b += `<table><thead><tr>${[
-    'Nº','Classe','Cap.','Marca','Localização',
-    'Últ. Recarga','Próx. Recarga','Últ. Teste Hid.','Próx. Teste Hid.',
-    'Nº Laudo','Nº Lacre','Empresa','Status','Atualiz. por','Data/Hora'
-  ].map(th).join('')}</tr></thead><tbody>`
-  if (EXT.length) {
-    sortByNum(EXT).forEach(e => {
+  if (extF.length > 0) {
+    b += `<h2>📋 Lista — Extintores (${extF.length})</h2>`
+    b += `<table><thead><tr>${[
+      'Nº','Classe','Cap.','Marca','Localização',
+      'Últ. Recarga','Próx. Recarga','Últ. Teste Hid.','Próx. Teste Hid.',
+      'Nº Laudo','Nº Lacre','Empresa','Status','Atualiz. por','Data/Hora'
+    ].map(th).join('')}</tr></thead><tbody>`
+    sortByNum(extF).forEach(e => {
       const s = getStatus(e.validade, e.em_manut)
       const corData = s==='danger'?'#C0392B':s==='warn'?'#D68910':''
       b += `<tr>
@@ -205,8 +216,8 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
         ${td(e.loc)}
         ${td(fmm(e.ult_recarga))}
         ${td(fmm(e.validade), corData)}
-        ${td(fmm(e.hdt))}
-        ${td(fmm(e.troca))}
+        ${td(e.hdt||'—')}
+        ${td(e.troca||'—')}
         ${td(e.hnum)}
         ${td(e.lacre)}
         ${td(e.empresa)}
@@ -215,40 +226,32 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
         ${td(fdt(e.upd_at))}
       </tr>`
     })
-  } else {
-    b += `<tr><td colspan="15" class="na">Nenhum extintor cadastrado.</td></tr>`
+    b += `</tbody></table>`
   }
-  b += `</tbody></table>`
 
-  // Lista completa hidrantes
-  b += `<h2>📋 Lista Completa — Hidrantes (${HID.length})</h2>`
-  b += `<table><thead><tr>${[
-    'Nº','Tipo','Marca','Diâm.','Localização',
-    'Últ. Inspeção','Próx. Inspeção','Teste Pressão','Pressão','Status','Atualiz. por','Data/Hora'
-  ].map(th).join('')}</tr></thead><tbody>`
-  if (HID.length) {
-    sortByNum(HID).forEach(h => {
+  if (hidF.length > 0) {
+    b += `<h2>📋 Lista — Hidrantes (${hidF.length})</h2>`
+    b += `<table><thead><tr>${[
+      'Nº','Tipo','Marca','Diâm.','Localização',
+      'Teste Pressão','Pressão','Status','Atualiz. por','Data/Hora'
+    ].map(th).join('')}</tr></thead><tbody>`
+    sortByNum(hidF).forEach(h => {
       const s = getStatusHid(h.checklist)
-      const corData = s==='danger'?'#C0392B':s==='warn'?'#D68910':''
       b += `<tr>
         ${td('<b>'+h.num+'</b>')}
         ${td(h.tp)}
         ${td(h.mk)}
         ${td(h.dm)}
         ${td(h.loc)}
-        ${td(fmm(h.ui))}
-        ${td(fmm(h.pi), corData)}
         ${td(fmm(h.pt))}
         ${td(h.pv ? h.pv+' bar' : '—')}
-        ${td(st(s))}
+        ${td(s==='ok'?'✅ Checklist OK':'🔴 Pendente', s==='ok'?'#1E8449':'#C0392B')}
         ${td(h.upd_by)}
         ${td(fdt(h.upd_at))}
       </tr>`
     })
-  } else {
-    b += `<tr><td colspan="12" class="na">Nenhum hidrante cadastrado.</td></tr>`
+    b += `</tbody></table>`
   }
-  b += `</tbody></table>`
 
   // Assinatura
   b += `<div class="assinatura">
@@ -275,8 +278,8 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
 </html>`
 }
 
-export function baixarRelatorio(EXT, HID, nomeUsuario) {
-  const html = gerarRelatorio(EXT, HID, nomeUsuario)
+export function baixarRelatorio(EXT, HID, nomeUsuario, filtro = 'ext-todos') {
+  const html = gerarRelatorio(EXT, HID, nomeUsuario, filtro)
   const data = new Date()
   const nome = `relatorio_hrsm_${data.getFullYear()}${String(data.getMonth()+1).padStart(2,'0')}${String(data.getDate()).padStart(2,'0')}_${String(data.getHours()).padStart(2,'0')}${String(data.getMinutes()).padStart(2,'0')}.html`
   const blob = new Blob([html], { type:'text/html;charset=utf-8' })
@@ -287,8 +290,8 @@ export function baixarRelatorio(EXT, HID, nomeUsuario) {
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 1500)
 }
 
-export function abrirRelatorio(EXT, HID, nomeUsuario) {
-  const html = gerarRelatorio(EXT, HID, nomeUsuario)
+export function abrirRelatorio(EXT, HID, nomeUsuario, filtro = 'ext-todos') {
+  const html = gerarRelatorio(EXT, HID, nomeUsuario, filtro)
   const blob = new Blob([html], { type:'text/html;charset=utf-8' })
   const url  = URL.createObjectURL(blob)
   window.open(url, '_blank')

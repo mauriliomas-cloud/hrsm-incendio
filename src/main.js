@@ -171,12 +171,26 @@ document.getElementById('fab').addEventListener('click', () => {
 })
 document.getElementById('user-btn').addEventListener('click', () => abrirOv('ov-user'))
 document.getElementById('btn-ir-adm').addEventListener('click', () => irPg('adm'))
+// ═══════════════════════════════════════
+// RELATÓRIO — SELEÇÃO DE FILTRO
+// ═══════════════════════════════════════
+let relFiltro = 'ext-todos'
+
+document.querySelectorAll('.btn-rel-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn-rel-opt').forEach(b => b.classList.remove('on'))
+    btn.classList.add('on')
+    relFiltro = btn.dataset.rel
+    renderRel()
+  })
+})
+
 document.getElementById('btn-rel-dl').addEventListener('click', () => {
-  baixarRelatorio(EXT, HID, perfil?.nome || '—')
+  baixarRelatorio(EXT, HID, perfil?.nome || '—', relFiltro)
   toast('📄 Relatório gerado!', 'ok')
 })
 document.getElementById('btn-rel-ver').addEventListener('click', () => {
-  abrirRelatorio(EXT, HID, perfil?.nome || '—')
+  abrirRelatorio(EXT, HID, perfil?.nome || '—', relFiltro)
 })
 
 // ═══════════════════════════════════════
@@ -801,17 +815,34 @@ function renderRel() {
   const el   = document.getElementById('rel-body')
   const now  = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
   const nome = perfil?.nome || '—'
+  const f    = relFiltro || 'ext-todos'
 
-  const eOk   = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'ok')
-  const eWarn = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'warn')
-  const eVenc = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger')
-  const eMan  = EXT.filter(e => e.em_manut)
-  const hVenc = HID.filter(h => getStatusHid(h.checklist) === 'danger')
-  const hOk   = HID.filter(h => getStatusHid(h.checklist) === 'ok')
+  // Filtra dados conforme seleção
+  let extFiltrados = EXT
+  let hidFiltrados = HID
+  let titulo = 'Relatório Completo'
+
+  if (f === 'ext-venc')  { extFiltrados = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger'); hidFiltrados = []; titulo = '🔴 Extintores Vencidos' }
+  else if (f === 'ext-warn')  { extFiltrados = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'warn'); hidFiltrados = []; titulo = '⚠️ Extintores com Atenção' }
+  else if (f === 'ext-manut') { extFiltrados = EXT.filter(e => e.em_manut); hidFiltrados = []; titulo = '🔧 Extintores em Manutenção' }
+  else if (f === 'ext-ap')    { extFiltrados = EXT.filter(e => e.cls === 'AP'); hidFiltrados = []; titulo = '🔵 Extintores AP' }
+  else if (f === 'ext-bc')    { extFiltrados = EXT.filter(e => e.cls === 'BC'); hidFiltrados = []; titulo = '🟡 Extintores BC' }
+  else if (f === 'ext-abc')   { extFiltrados = EXT.filter(e => e.cls === 'ABC'); hidFiltrados = []; titulo = '🟢 Extintores ABC' }
+  else if (f === 'ext-co2')   { extFiltrados = EXT.filter(e => e.cls === 'CO₂'); hidFiltrados = []; titulo = '🟣 Extintores CO₂' }
+  else if (f === 'hid-todos') { extFiltrados = []; titulo = '💧 Todos os Hidrantes' }
+  else if (f === 'hid-pend')  { extFiltrados = []; hidFiltrados = HID.filter(h => getStatusHid(h.checklist) === 'danger'); titulo = '🔴 Hidrantes com Checklist Pendente' }
+  else if (f === 'hid-conf')  { extFiltrados = []; hidFiltrados = HID.filter(h => { let hist = h.checklist; if(typeof hist==='string'){try{hist=JSON.parse(hist)}catch(e){return false}} if(!Array.isArray(hist)||!hist.length) return false; const ult=hist[hist.length-1]; return ['Ruim','Regular','Ausente'].some(v=>[ult.mang1,ult.mang2,ult.chave,ult.esguicho,ult.abrigo,ult.registro,ult.lacre].includes(v)) }); titulo = '⚠️ Hidrantes Fora de Conformidade' }
+
+  const eOk   = extFiltrados.filter(e => getStatus(e.validade, e.em_manut) === 'ok')
+  const eWarn = extFiltrados.filter(e => getStatus(e.validade, e.em_manut) === 'warn')
+  const eVenc = extFiltrados.filter(e => getStatus(e.validade, e.em_manut) === 'danger')
+  const eMan  = extFiltrados.filter(e => e.em_manut)
+  const hVenc = hidFiltrados.filter(h => getStatusHid(h.checklist) === 'danger')
+  const hOk   = hidFiltrados.filter(h => getStatusHid(h.checklist) === 'ok')
 
   let h = `<div style="background:#7B241C;color:#fff;border-radius:12px;padding:14px;margin-bottom:14px">
     <div style="font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px">Hospital Regional de Santa Maria</div>
-    <div style="font-size:16px;font-weight:700;margin-bottom:5px">Relatório de Combate a Incêndio</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:5px">${titulo}</div>
     <div style="font-size:11px;opacity:.8">📅 ${now} &nbsp;|&nbsp; 👤 ${nome}</div>
   </div>`
 
@@ -864,21 +895,27 @@ function renderRel() {
     h += `</div>`
   }
 
-  h += `<div class="rcard"><div class="rhdr rok">✅ Todos os Extintores (${EXT.length})</div>`
-  sortByNum(EXT).forEach(e => {
-    const s = getStatus(e.validade, e.em_manut)
-    h += `<div class="rrow"><div><div class="rnum">${e.num}</div>${clsBadge(e.cls)}${e.em_manut?'<br><span style="font-size:9px;color:var(--orange);font-weight:700">MANUT.</span>':''}</div><div class="rloc">${e.loc}<br><span style="font-size:10px">${e.mk||''}</span></div><div>${stBadge(s)}<div class="rdt">${fmm(e.validade)}</div><div class="rby">${e.upd_by||'—'}</div></div></div>`
-  })
-  if (!EXT.length) h += `<div class="na">Nenhum extintor cadastrado.</div>`
-  h += `</div>`
+  if (extFiltrados.length > 0) {
+    h += `<div class="rcard"><div class="rhdr rok">📋 Extintores (${extFiltrados.length})</div>`
+    sortByNum(extFiltrados).forEach(e => {
+      const s = getStatus(e.validade, e.em_manut)
+      h += `<div class="rrow"><div><div class="rnum">${e.num}</div>${clsBadge(e.cls)}${e.em_manut?'<br><span style="font-size:9px;color:var(--orange);font-weight:700">MANUT.</span>':''}</div><div class="rloc">${e.loc}<br><span style="font-size:10px">${e.mk||''}</span></div><div>${stBadge(s)}<div class="rdt">${fmm(e.validade)}</div><div class="rby">${e.upd_by||'—'}</div></div></div>`
+    })
+    h += `</div>`
+  }
 
-  h += `<div class="rcard"><div class="rhdr rok">✅ Todos os Hidrantes (${HID.length})</div>`
-  sortByNum(HID).forEach(hh => {
-    const s = getStatusHid(hh.checklist)
-    h += `<div class="rrow"><div class="rnum">${hh.num}</div><div class="rloc">${hh.tp}<br>${hh.loc}</div><div>${stBadgeHid(s)}<div class="rby">${hh.upd_by||'—'}</div></div></div>`
-  })
-  if (!HID.length) h += `<div class="na">Nenhum hidrante cadastrado.</div>`
-  h += `</div>`
+  if (hidFiltrados.length > 0) {
+    h += `<div class="rcard"><div class="rhdr rok">📋 Hidrantes (${hidFiltrados.length})</div>`
+    sortByNum(hidFiltrados).forEach(hh => {
+      const s = getStatusHid(hh.checklist)
+      h += `<div class="rrow"><div class="rnum">${hh.num}</div><div class="rloc">${hh.tp}<br>${hh.loc}</div><div>${stBadgeHid(s)}<div class="rby">${hh.upd_by||'—'}</div></div></div>`
+    })
+    h += `</div>`
+  }
+
+  if (!extFiltrados.length && !hidFiltrados.length) {
+    h += `<div class="empty"><div class="ei">✅</div><p>Nenhum item encontrado para este filtro.</p></div>`
+  }
 
   h += `<div style="text-align:center;color:var(--muted);font-size:10px;padding:8px 0 14px">HRSM · Combate a Incêndio · ${now}</div>`
   el.innerHTML = h

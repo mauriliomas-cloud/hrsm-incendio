@@ -172,7 +172,10 @@ body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg);
 .uinfo .ul { font-size: 11px; color: var(--muted) }
 .udel { height: 32px; padding: 0 10px; border: 1.5px solid var(--redl); background: var(--redl); color: var(--red); border-radius: 7px; cursor: pointer; font-size: 11px; font-weight: 600 }
 
-/* ── EMPTY ── */
+/* ── BOTÕES RELATÓRIO ── */
+.btn-rel-opt { height:38px; border:1.5px solid var(--bdr); background:#fff; border-radius:9px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; color:var(--ink2); transition:all .15s; padding:0 10px }
+.btn-rel-opt.on { background:var(--redl); border-color:var(--red); color:var(--red) }
+.btn-rel-opt:active { opacity:.8 }
 .empty { text-align: center; padding: 36px 20px; color: var(--muted) }
 .empty .ei { font-size: 42px; margin-bottom: 8px }
 .empty p   { font-size: 14px }
