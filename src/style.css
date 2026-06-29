@@ -43,10 +43,11 @@ body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg);
 .pg.on { display: block }
 
 /* ── BOTTOM NAV ── */
-.bnav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1.5px solid var(--bdr); display: flex; box-shadow: 0 -2px 10px rgba(0,0,0,.07); z-index: 100 }
-.bnav button { flex: 1; border: none; background: none; padding: 9px 4px 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); font-size: 10px; font-weight: 500; transition: color .15s; font-family: inherit }
-.bnav button.on { color: var(--red) }
-.bnav button .ni { font-size: 21px; line-height: 1 }
+.bnav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1.5px solid var(--bdr); display: flex; box-shadow: 0 -2px 10px rgba(0,0,0,.07); z-index: 100; padding: 6px 8px 10px }
+.bnav button { flex: 1; border: none; background: none; padding: 8px 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--muted); font-size: 10px; font-weight: 600; transition: all .2s; font-family: inherit; border-radius: 12px; margin: 0 3px }
+.bnav button.on { color: var(--red); background: var(--redl); box-shadow: inset 0 2px 6px rgba(192,57,43,.15) }
+.bnav button .ni { font-size: 22px; line-height: 1; transition: transform .2s }
+.bnav button.on .ni { transform: scale(1.15) }
 
 /* ── FAB ── */
 .fab { position: fixed; bottom: 68px; right: 14px; width: 54px; height: 54px; border-radius: 50%; background: var(--red); color: #fff; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 14px rgba(192,57,43,.5); display: flex; align-items: center; justify-content: center; z-index: 99; transition: transform .15s }
