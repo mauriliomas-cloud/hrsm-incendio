@@ -30,7 +30,7 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
   const eVenc = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger')
   const eMan  = EXT.filter(e => e.em_manut)
   const hVenc = HID.filter(h => getStatusHid(h.checklist) === 'danger')
-  const hWarn = HID.filter(h => getStatusHid(h.checklist) === 'warn')
+  const hOk   = HID.filter(h => getStatusHid(h.checklist) === 'ok')
 
   const css = `
     * { box-sizing:border-box; margin:0; padding:0 }
@@ -176,9 +176,9 @@ export function gerarRelatorio(EXT, HID, nomeUsuario) {
     b += `<p class="na">✅ Nenhum hidrante com itens fora de conformidade.</p>`
   }
 
-  // Hidrantes vencidos
+  // Hidrantes com checklist pendente
   if (hVenc.length) {
-    b += `<h2>🔴 Hidrantes — Inspeção Vencida (${hVenc.length})</h2>`
+    b += `<h2>🔴 Hidrantes — Checklist Pendente este Mês (${hVenc.length})</h2>`
     b += `<table><thead><tr>${['Nº','Tipo','Local','Próx. Inspeção','Atualizado por'].map(th).join('')}</tr></thead><tbody>`
     sortByNum(hVenc).forEach(h => {
       b += `<tr>${td('<b>'+h.num+'</b>')}${td(h.tp)}${td(h.loc)}${td(fmm(h.pi),'#C0392B')}${td(h.upd_by)}</tr>`
