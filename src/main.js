@@ -12,6 +12,7 @@ import { baixarRelatorio, abrirRelatorio } from './relatorio.js'
 // ═══════════════════════════════════════
 let EXT = [], HID = [], perfil = null
 let curPg = 'ext', editExtId = null, editHidId = null, manId = null
+let relFiltro = 'ext-todos'
 
 // ═══════════════════════════════════════
 // DETECÇÃO DE CONEXÃO
@@ -185,7 +186,6 @@ document.getElementById('btn-ir-adm').addEventListener('click', () => irPg('adm'
 // ═══════════════════════════════════════
 // RELATÓRIO — SELEÇÃO DE FILTRO
 // ═══════════════════════════════════════
-let relFiltro = 'ext-todos'
 
 document.querySelectorAll('.btn-rel-opt').forEach(btn => {
   btn.addEventListener('click', () => {
