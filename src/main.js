@@ -1348,11 +1348,23 @@ window.addEventListener('popstate', (e) => {
 })
 
 // Expõe funções globais necessárias pelo HTML
-window.filtrarSetor   = filtrarSetor
-window.previewFoto    = previewFoto
-window.toggleAndar    = toggleAndar
-window.verFoto        = verFoto
-window.autoUltTeste   = autoUltTeste
+window.filtrarSetor       = filtrarSetor
+window.previewFoto        = previewFoto
+window.toggleAndar        = toggleAndar
+window.verFoto            = verFoto
+window.autoUltTeste       = autoUltTeste
+window.preencherTudoBom   = preencherTudoBom
+
+function preencherTudoBom() {
+  document.getElementById('chk-mang1').value    = 'Bom'
+  document.getElementById('chk-mang2').value    = 'Bom'
+  document.getElementById('chk-chave').value    = 'Presente'
+  document.getElementById('chk-esguicho').value = 'Bom'
+  document.getElementById('chk-abrigo').value   = 'Bom'
+  document.getElementById('chk-registro').value = 'Bom'
+  document.getElementById('chk-lacre').value    = 'Presente'
+  toast('✅ Todos os itens preenchidos como Bom!', 'ok')
+}
 
 function autoUltTeste() {
   const prox = parseInt(document.getElementById('ef-troca').value)

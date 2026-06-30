@@ -343,7 +343,10 @@
         <div class="mfg"><label>Responsável</label><input id="chk-resp" readonly style="background:var(--bg)"></div>
       </div>
 
-      <div class="fsec">Itens de Inspeção</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 6px;padding-top:12px;border-top:1px solid var(--bdr)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Itens de Inspeção</div>
+        <button type="button" onclick="preencherTudoBom()" style="height:30px;padding:0 12px;border:1.5px solid var(--greenl);background:var(--greenl);color:var(--green);border-radius:8px;cursor:pointer;font-size:11px;font-weight:700">✅ Tudo Bom</button>
+      </div>
 
       <div class="mfg"><label>Mangueira 1</label>
         <select id="chk-mang1">
