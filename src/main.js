@@ -613,6 +613,7 @@ function abrirExt() {
     'ef-fab','ef-lacre','ef-obs'
   ].forEach(id => sv(id,''))
   popularSelectEmpresas()
+  document.getElementById('ef-foto').value = ''
   document.getElementById('ef-foto-preview').style.display = 'none'
   abrirOv('ov-ext')
 }
@@ -782,6 +783,8 @@ function abrirHid() {
   editHidId = null
   document.getElementById('tit-hid').textContent = 'Novo Hidrante'
   ;['hf-num','hf-tp','hf-mk','hf-dm','hf-andar','hf-setor','hf-desc','hf-ui','hf-pi','hf-pt','hf-pv','hf-obs'].forEach(id => sv(id,''))
+  document.getElementById('hf-foto').value = ''
+  document.getElementById('hf-foto-preview').style.display = 'none'
   abrirOv('ov-hid')
 }
 
