@@ -27,7 +27,8 @@ export function gerarRelatorio(EXT, HID, nomeUsuario, filtro = 'ext-todos') {
 
   // Aplica filtro
   let extF = EXT, hidF = HID, titulo = 'Relatório Completo'
-  if (filtro === 'ext-venc')  { extF = EXT.filter(e => getStatus(e.validade,e.em_manut)==='danger'); hidF=[]; titulo='🔴 Extintores Vencidos' }
+  if (filtro === 'ext-todos') { hidF=[]; titulo='🧯 Todos os Extintores' }
+  else if (filtro === 'ext-venc')  { extF = EXT.filter(e => getStatus(e.validade,e.em_manut)==='danger'); hidF=[]; titulo='🔴 Extintores Vencidos' }
   else if (filtro === 'ext-warn')  { extF = EXT.filter(e => getStatus(e.validade,e.em_manut)==='warn'); hidF=[]; titulo='⚠️ Extintores com Atenção' }
   else if (filtro === 'ext-manut') { extF = EXT.filter(e => e.em_manut); hidF=[]; titulo='🔧 Extintores em Manutenção' }
   else if (filtro === 'ext-ap')    { extF = EXT.filter(e => e.cls==='AP'); hidF=[]; titulo='🔵 Extintores AP' }

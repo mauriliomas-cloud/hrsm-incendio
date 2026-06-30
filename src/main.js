@@ -842,7 +842,8 @@ function renderRel() {
   let hidFiltrados = HID
   let titulo = 'Relatório Completo'
 
-  if (f === 'ext-venc')  { extFiltrados = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger'); hidFiltrados = []; titulo = '🔴 Extintores Vencidos' }
+  if (f === 'ext-todos') { hidFiltrados = []; titulo = '🧯 Todos os Extintores' }
+  else if (f === 'ext-venc')  { extFiltrados = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger'); hidFiltrados = []; titulo = '🔴 Extintores Vencidos' }
   else if (f === 'ext-warn')  { extFiltrados = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'warn'); hidFiltrados = []; titulo = '⚠️ Extintores com Atenção' }
   else if (f === 'ext-manut') { extFiltrados = EXT.filter(e => e.em_manut); hidFiltrados = []; titulo = '🔧 Extintores em Manutenção' }
   else if (f === 'ext-ap')    { extFiltrados = EXT.filter(e => e.cls === 'AP'); hidFiltrados = []; titulo = '🔵 Extintores AP' }
