@@ -86,6 +86,29 @@ export async function deletarHidrante(id) {
 
 // ══════════════════════════════════════
 // ══════════════════════════════════════
+// EMPRESAS
+// ══════════════════════════════════════
+
+export async function listarEmpresas() {
+  const { data, error } = await supabase
+    .from('empresas')
+    .select('*')
+    .order('nome')
+  if (error) throw error
+  return data
+}
+
+export async function inserirEmpresa(nome) {
+  const { data, error } = await supabase
+    .from('empresas')
+    .insert([{ nome: nome.toUpperCase().trim() }])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+// ══════════════════════════════════════
 // REALTIME — escuta mudanças ao vivo
 // ══════════════════════════════════════
 

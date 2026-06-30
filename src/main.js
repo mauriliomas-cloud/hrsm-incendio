@@ -2,7 +2,8 @@ import { supabase } from './supabase.js'
 import { login, logout, getMeuPerfil, onAuthChange } from './auth.js'
 import {
   listarExtintores, inserirExtintor, atualizarExtintor, deletarExtintor, escutarExtintores,
-  listarHidrantes,  inserirHidrante,  atualizarHidrante,  deletarHidrante, escutarHidrantes
+  listarHidrantes,  inserirHidrante,  atualizarHidrante,  deletarHidrante, escutarHidrantes,
+  listarEmpresas, inserirEmpresa
 } from './db.js'
 import { fmm, fdt, sortByNum, getStatus, getStatusHid, stBadge, stBadgeHid, clsBadge, toast, confirmar } from './utils.js'
 import { baixarRelatorio, abrirRelatorio } from './relatorio.js'
@@ -14,6 +15,26 @@ let EXT = [], HID = [], perfil = null
 let curPg = 'ext', editExtId = null, editHidId = null, manId = null
 let relFiltro = 'ext-todos'
 let ultimaAbaRelevante = 'ext'
+let EMPRESAS = []
+
+async function carregarEmpresas() {
+  try {
+    EMPRESAS = await listarEmpresas()
+    popularSelectEmpresas()
+  } catch(e) { console.warn('Erro ao carregar empresas:', e.message) }
+}
+
+function popularSelectEmpresas() {
+  const sel = document.getElementById('ef-empresa')
+  if (!sel) return
+  const atual = sel.value
+  sel.innerHTML = '<option value="">— Selecione —</option>'
+  EMPRESAS.forEach(emp => {
+    sel.innerHTML += `<option value="${emp.nome}">${emp.nome}</option>`
+  })
+  sel.innerHTML += '<option value="__nova__">＋ Cadastrar nova empresa</option>'
+  if (atual) sel.value = atual
+}
 
 // ═══════════════════════════════════════
 // DETECÇÃO DE CONEXÃO
@@ -112,7 +133,7 @@ async function iniciarApp() {
       }
     }, 5000)
 
-    await Promise.all([carregarExt(), carregarHid()])
+    await Promise.all([carregarExt(), carregarHid(), carregarEmpresas()])
     irPg('ext')
 
     // Realtime — evita duplicar canais
@@ -589,11 +610,32 @@ function abrirExt() {
   document.getElementById('tit-ext').textContent = 'Novo Extintor'
   ;['ef-num','ef-cls','ef-cap','ef-mk','ef-andar','ef-setor','ef-desc',
     'ef-ult-recarga','ef-val','ef-troca','ef-hdt','ef-hnum',
-    'ef-fab','ef-lacre','ef-empresa','ef-obs'
+    'ef-fab','ef-lacre','ef-obs'
   ].forEach(id => sv(id,''))
+  popularSelectEmpresas()
+  sv('ef-empresa', 'SUDOESTE EXTINTORES')
   document.getElementById('ef-foto-preview').style.display = 'none'
   abrirOv('ov-ext')
 }
+
+document.getElementById('ef-empresa').addEventListener('change', async function() {
+  if (this.value === '__nova__') {
+    const nome = prompt('Digite o nome da nova empresa:')
+    if (nome && nome.trim()) {
+      try {
+        const nova = await inserirEmpresa(nome)
+        await carregarEmpresas()
+        sv('ef-empresa', nova.nome)
+        toast('✅ Empresa cadastrada!', 'ok')
+      } catch(e) {
+        toast('Erro: ' + e.message, 'err')
+        sv('ef-empresa', '')
+      }
+    } else {
+      sv('ef-empresa', '')
+    }
+  }
+})
 
 document.getElementById('btn-salva-ext').addEventListener('click', async () => {
   const btn = document.getElementById('btn-salva-ext')
@@ -622,7 +664,7 @@ document.getElementById('btn-salva-ext').addEventListener('click', async () => {
       cap, mk: gv('ef-mk'), descricao: gv('ef-desc'),
       ult_recarga: gv('ef-ult-recarga'),
       troca: gv('ef-troca'), hdt: gv('ef-hdt'), hnum: gv('ef-hnum'),
-      fab: gv('ef-fab'), lacre: gv('ef-lacre'), empresa: gv('ef-empresa'),
+      fab: gv('ef-fab'), lacre: gv('ef-lacre'), empresa: gv('ef-empresa').toUpperCase().trim(),
       obs: gv('ef-obs'),
       upd_by: perfil?.nome || '—'
     }
@@ -664,7 +706,9 @@ function editExt(id) {
   sv('ef-hdt', e.hdt)
   sv('ef-troca', e.troca)
   sv('ef-hnum', e.hnum)
-  sv('ef-fab', e.fab); sv('ef-lacre', e.lacre); sv('ef-empresa', e.empresa)
+  sv('ef-fab', e.fab); sv('ef-lacre', e.lacre)
+  popularSelectEmpresas()
+  sv('ef-empresa', e.empresa)
   sv('ef-obs', e.obs)
   // Mostra foto existente
   if (e.foto_url) {
