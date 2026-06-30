@@ -876,18 +876,27 @@ function renderRel() {
     <div style="font-size:11px;opacity:.8">📅 ${now} &nbsp;|&nbsp; 👤 ${nome}</div>
   </div>`
 
-  h += `<div class="stats" style="margin-bottom:13px">
-    ${mkSt('Extintores',EXT.length,'total','')}
-    ${mkSt('OK',eOk.length,'em dia','cg')}
-    ${mkSt('Atenção',eWarn.length,'60 dias','ca')}
-    ${mkSt('Vencidos',eVenc.length,'urgente','cr')}
-    ${mkSt('Manutenção',eMan.length,'fora serviço','co')}
-    ${mkSt('Hidrantes',HID.length,'total','')}
-    ${mkSt('Checklist OK',hOk.length,'este mês','cg')}
-    ${mkSt('Pendente',hVenc.length,'este mês','cr')}
-  </div>`
+  const isExtFiltro = f.startsWith('ext')
+  const isHidFiltro = f.startsWith('hid')
 
-  // Manutenção
+  let statsHtml = ''
+  if (isExtFiltro) {
+    statsHtml += mkSt('Extintores',extFiltrados.length,'total','') +
+      mkSt('OK',eOk.length,'em dia','cg') +
+      mkSt('Atenção',eWarn.length,'60 dias','ca') +
+      mkSt('Vencidos',eVenc.length,'urgente','cr') +
+      mkSt('Manutenção',eMan.length,'fora serviço','co')
+  }
+  if (isHidFiltro) {
+    statsHtml += mkSt('Hidrantes',hidFiltrados.length,'total','') +
+      mkSt('Checklist OK',hOk.length,'este mês','cg') +
+      mkSt('Pendente',hVenc.length,'este mês','cr')
+  }
+
+  h += `<div class="stats" style="margin-bottom:13px">${statsHtml}</div>`
+
+  // Manutenção — só para extintores
+  if (isExtFiltro) {
   h += `<div class="rcard"><div class="rhdr rorange">🔧 Em Manutenção (${eMan.length})</div>`
   if (eMan.length) {
     sortByNum(eMan).forEach(e => {
@@ -917,7 +926,9 @@ function renderRel() {
     })
     h += `</div>`
   }
-  if (hVenc.length) {
+  } // fim isExtFiltro
+
+  if (isHidFiltro && hVenc.length) {
     h += `<div class="rcard"><div class="rhdr rdanger">🔴 Hidrantes — Checklist Pendente (${hVenc.length})</div>`
     sortByNum(hVenc).forEach(hh => {
       h += `<div class="rrow"><div class="rnum">${hh.num}</div><div class="rloc">${hh.tp}<br>${hh.loc}</div><div><div class="rby">${hh.upd_by||'—'}</div></div></div>`
@@ -925,7 +936,7 @@ function renderRel() {
     h += `</div>`
   }
 
-  if (extFiltrados.length > 0) {
+  if (isExtFiltro && extFiltrados.length > 0) {
     h += `<div class="rcard"><div class="rhdr rok">📋 Extintores (${extFiltrados.length})</div>`
     sortByNum(extFiltrados).forEach(e => {
       const s = getStatus(e.validade, e.em_manut)

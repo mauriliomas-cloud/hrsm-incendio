@@ -93,14 +93,19 @@ export function gerarRelatorio(EXT, HID, nomeUsuario, filtro = 'ext-todos') {
     </div>
   </div>`
 
-  const ap  = EXT.filter(e => e.cls === 'AP').length
-  const bc  = EXT.filter(e => e.cls === 'BC').length
-  const abc = EXT.filter(e => e.cls === 'ABC').length
-  const co2 = EXT.filter(e => e.cls === 'CO₂').length
+  const isExtFiltro = filtro.startsWith('ext')
+  const isHidFiltro = filtro.startsWith('hid')
+
+  const ap  = extF.filter(e => e.cls === 'AP').length
+  const bc  = extF.filter(e => e.cls === 'BC').length
+  const abc = extF.filter(e => e.cls === 'ABC').length
+  const co2 = extF.filter(e => e.cls === 'CO₂').length
 
   // Resumo
-  b += `<div class="resumo">
-    <div class="sc"><div class="sl">Total Extintores</div><div class="sv">${EXT.length}</div><div class="ss">cadastrados</div></div>
+  let resumoHtml = ''
+  if (isExtFiltro) {
+    resumoHtml += `
+    <div class="sc"><div class="sl">Total Extintores</div><div class="sv">${extF.length}</div><div class="ss">cadastrados</div></div>
     <div class="sc cg"><div class="sl">Em Dia</div><div class="sv">${eOk.length}</div><div class="ss">OK</div></div>
     <div class="sc ca"><div class="sl">Atenção</div><div class="sv">${eWarn.length}</div><div class="ss">60 dias</div></div>
     <div class="sc cr"><div class="sl">Vencidos</div><div class="sv">${eVenc.length}</div><div class="ss">urgente</div></div>
@@ -108,13 +113,18 @@ export function gerarRelatorio(EXT, HID, nomeUsuario, filtro = 'ext-todos') {
     <div class="sc" style="border-color:#EBF5FB"><div class="sl">AP</div><div class="sv" style="color:#1A5276">${ap}</div><div class="ss">água pressurizada</div></div>
     <div class="sc" style="border-color:#FEF9E7"><div class="sl">BC</div><div class="sv" style="color:#7D6608">${bc}</div><div class="ss">pó químico BC</div></div>
     <div class="sc" style="border-color:#EAFAF1"><div class="sl">ABC</div><div class="sv" style="color:#1E8449">${abc}</div><div class="ss">pó químico ABC</div></div>
-    <div class="sc" style="border-color:#F4ECF7"><div class="sl">CO₂</div><div class="sv" style="color:#6C3483">${co2}</div><div class="ss">gás carbônico</div></div>
-    <div class="sc"><div class="sl">Total Hidrantes</div><div class="sv">${HID.length}</div><div class="ss">cadastrados</div></div>
+    <div class="sc" style="border-color:#F4ECF7"><div class="sl">CO₂</div><div class="sv" style="color:#6C3483">${co2}</div><div class="ss">gás carbônico</div></div>`
+  }
+  if (isHidFiltro) {
+    resumoHtml += `
+    <div class="sc"><div class="sl">Total Hidrantes</div><div class="sv">${hidF.length}</div><div class="ss">cadastrados</div></div>
     <div class="sc cr"><div class="sl">Checklist Pendente</div><div class="sv">${hVenc.length}</div><div class="ss">este mês</div></div>
-    <div class="sc cg"><div class="sl">Checklist OK</div><div class="sv">${HID.length - hVenc.length}</div><div class="ss">feito este mês</div></div>
-  </div>`
+    <div class="sc cg"><div class="sl">Checklist OK</div><div class="sv">${hidF.length - hVenc.length}</div><div class="ss">feito este mês</div></div>`
+  }
+  b += `<div class="resumo">${resumoHtml}</div>`
 
-  // Manutenção
+  // Manutenção — só extintores
+  if (isExtFiltro) {
   b += `<h2>🔧 Extintores em Manutenção (${eMan.length})</h2>`
   if (eMan.length) {
     b += `<table><thead><tr>${['Nº','Classe','Local','Saída','Motivo / Empresa','Atualizado por'].map(th).join('')}</tr></thead><tbody>`
@@ -143,6 +153,7 @@ export function gerarRelatorio(EXT, HID, nomeUsuario, filtro = 'ext-todos') {
     })
     b += `</tbody></table>`
   } else { b += `<p class="na">Nenhum extintor com vencimento próximo.</p>` }
+  } // fim isExtFiltro
 
   // Hidrantes com itens fora de conformidade — só mostra se houver hidrantes no filtro
   if (hidF.length > 0) {
