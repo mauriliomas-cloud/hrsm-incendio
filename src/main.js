@@ -613,7 +613,6 @@ function abrirExt() {
     'ef-fab','ef-lacre','ef-obs'
   ].forEach(id => sv(id,''))
   popularSelectEmpresas()
-  sv('ef-empresa', 'SUDOESTE EXTINTORES')
   document.getElementById('ef-foto-preview').style.display = 'none'
   abrirOv('ov-ext')
 }
