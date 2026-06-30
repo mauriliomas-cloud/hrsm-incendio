@@ -761,11 +761,20 @@ document.getElementById('btn-salva-hid').addEventListener('click', async () => {
     }
 
     let saved
+    const eraNovo = !editHidId
     if (editHidId) { saved = await atualizarHidrante(editHidId, payload); toast('✅ Hidrante atualizado!', 'ok') }
     else           { saved = await inserirHidrante(payload);               toast('✅ Hidrante cadastrado!', 'ok') }
     const fotoUrl = await uploadFoto('hid', saved.id)
     if (fotoUrl) await atualizarHidrante(saved.id, { foto_url: fotoUrl })
     fecharOv('ov-hid'); await carregarHid()
+
+    // Se for cadastro novo, abre o checklist automaticamente
+    if (eraNovo) {
+      setTimeout(() => {
+        toast('📋 Agora vamos fazer o primeiro checklist!', 'ok')
+        abrirChecklist(saved.id)
+      }, 600)
+    }
   } catch(e) { toast('Erro: ' + e.message, 'err') }
   finally {
     btn.disabled = false
@@ -962,6 +971,8 @@ function abrirChecklist(id) {
     'chk-abrigo','chk-registro','chk-lacre',
     'chk-hid1-ult','chk-hid1-prox','chk-hid2-ult','chk-hid2-prox','chk-obs'
   ].forEach(id => { const el=document.getElementById(id); if(el) el.value='' })
+  document.getElementById('chk-foto').value = ''
+  document.getElementById('chk-foto-preview').style.display = 'none'
 
   // Define data de hoje
   const hoje = new Date()
@@ -1118,6 +1129,10 @@ document.getElementById('btn-salva-chk').addEventListener('click', async () => {
   const data = document.getElementById('chk-data').value
   if (!data) { toast('⚠️ Informe a data da inspeção'); return }
 
+  // Exige foto atualizada
+  const fotoFile = document.getElementById('chk-foto').files[0]
+  if (!fotoFile) { toast('⚠️ Tire uma foto atualizada do hidrante'); return }
+
   // Verifica se pelo menos um item foi preenchido
   const itens = [
     document.getElementById('chk-mang1').value,
@@ -1155,11 +1170,19 @@ document.getElementById('btn-salva-chk').addEventListener('click', async () => {
   const hist = Array.isArray(h.checklist) ? [...h.checklist, insp] : [insp]
 
   try {
+    // Upload da nova foto — atualiza foto principal do hidrante
+    const ext  = fotoFile.name.split('.').pop()
+    const path = 'hid/' + chkId + '.' + ext
+    const { error: upErr } = await supabase.storage.from('fotos').upload(path, fotoFile, { upsert: true })
+    if (upErr) throw upErr
+    const { data: pub } = supabase.storage.from('fotos').getPublicUrl(path)
+
     await atualizarHidrante(chkId, {
       checklist: hist,
+      foto_url: pub.publicUrl,
       upd_by: perfil?.nome || '—'
     })
-    toast('✅ Checklist salvo!', 'ok')
+    toast('✅ Checklist e foto salvos!', 'ok')
     fecharOv('ov-chk')
     await carregarHid()
   } catch(e) { toast('Erro: ' + e.message, 'err') }
@@ -1353,7 +1376,28 @@ window.previewFoto        = previewFoto
 window.toggleAndar        = toggleAndar
 window.verFoto            = verFoto
 window.autoUltTeste       = autoUltTeste
+window.autoUltMangueira   = autoUltMangueira
 window.preencherTudoBom   = preencherTudoBom
+window.previewFotoChk     = previewFotoChk
+
+function previewFotoChk() {
+  const file = document.getElementById('chk-foto').files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = function(e) {
+    document.getElementById('chk-foto-img').src = e.target.result
+    document.getElementById('chk-foto-preview').style.display = 'block'
+  }
+  reader.readAsDataURL(file)
+}
+
+function autoUltMangueira(n) {
+  const prox = document.getElementById('chk-hid'+n+'-prox').value // YYYY-MM
+  if (!prox) return
+  const [y, m] = prox.split('-').map(Number)
+  const ultAno = y - 1
+  document.getElementById('chk-hid'+n+'-ult').value = String(ultAno).padStart(4,'0') + '-' + String(m).padStart(2,'0')
+}
 
 function preencherTudoBom() {
   document.getElementById('chk-mang1').value    = 'Bom'

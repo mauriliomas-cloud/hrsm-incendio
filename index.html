@@ -343,6 +343,16 @@
         <div class="mfg"><label>Responsável</label><input id="chk-resp" readonly style="background:var(--bg)"></div>
       </div>
 
+      <div class="fsec">Foto Atualizada do Hidrante <span class="req">*</span></div>
+      <div class="mfg">
+        <div id="chk-foto-preview" style="display:none;margin-bottom:8px">
+          <img id="chk-foto-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
+        </div>
+        <input type="file" id="chk-foto" accept="image/*" capture="environment" style="display:none" onchange="previewFotoChk()">
+        <button type="button" class="btn bout bfull" onclick="document.getElementById('chk-foto').click()">📷 Tirar Foto Atualizada</button>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">Tire uma foto nova para comparar com os itens informados abaixo.</div>
+      </div>
+
       <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 6px;padding-top:12px;border-top:1px solid var(--bdr)">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Itens de Inspeção</div>
         <button type="button" onclick="preencherTudoBom()" style="height:30px;padding:0 12px;border:1.5px solid var(--greenl);background:var(--greenl);color:var(--green);border-radius:8px;cursor:pointer;font-size:11px;font-weight:700">✅ Tudo Bom</button>
@@ -391,14 +401,14 @@
         </select>
       </div>
 
-      <div class="fsec">Teste Hidrostático das Mangueiras</div>
+      <div class="fsec">Teste Hidrostático das Mangueiras (Anual)</div>
       <div class="g2">
-        <div class="mfg"><label>Mangueira 1 — Último Teste</label><input id="chk-hid1-ult" type="month"></div>
-        <div class="mfg"><label>Mangueira 1 — Próximo Teste</label><input id="chk-hid1-prox" type="month"></div>
+        <div class="mfg"><label>Mangueira 1 — Último Teste</label><input id="chk-hid1-ult" type="month" readonly style="background:var(--bg)"></div>
+        <div class="mfg"><label>Mangueira 1 — Próximo Teste</label><input id="chk-hid1-prox" type="month" onchange="autoUltMangueira(1)"></div>
       </div>
       <div class="g2">
-        <div class="mfg"><label>Mangueira 2 — Último Teste</label><input id="chk-hid2-ult" type="month"></div>
-        <div class="mfg"><label>Mangueira 2 — Próximo Teste</label><input id="chk-hid2-prox" type="month"></div>
+        <div class="mfg"><label>Mangueira 2 — Último Teste</label><input id="chk-hid2-ult" type="month" readonly style="background:var(--bg)"></div>
+        <div class="mfg"><label>Mangueira 2 — Próximo Teste</label><input id="chk-hid2-prox" type="month" onchange="autoUltMangueira(2)"></div>
       </div>
 
       <div class="fsec">Observações</div>
