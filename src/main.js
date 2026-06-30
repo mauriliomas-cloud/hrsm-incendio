@@ -3,7 +3,8 @@ import { login, logout, getMeuPerfil, onAuthChange } from './auth.js'
 import {
   listarExtintores, inserirExtintor, atualizarExtintor, deletarExtintor, escutarExtintores,
   listarHidrantes,  inserirHidrante,  atualizarHidrante,  deletarHidrante, escutarHidrantes,
-  listarEmpresas, inserirEmpresa
+  listarEmpresas, inserirEmpresa,
+  listarOcorrencias, inserirOcorrencia, atualizarOcorrencia, deletarOcorrencia
 } from './db.js'
 import { fmm, fdt, sortByNum, getStatus, getStatusHid, stBadge, stBadgeHid, clsBadge, toast, confirmar } from './utils.js'
 import { baixarRelatorio, abrirRelatorio } from './relatorio.js'
@@ -16,6 +17,8 @@ let curPg = 'ext', editExtId = null, editHidId = null, manId = null
 let relFiltro = 'ext-todos'
 let ultimaAbaRelevante = 'ext'
 let EMPRESAS = []
+let OCR = []
+let editOcrId = null
 
 async function carregarEmpresas() {
   try {
@@ -109,6 +112,7 @@ async function iniciarApp() {
     const isAdmin = perfil?.role === 'admin'
     document.getElementById('nb-adm').style.display = isAdmin ? 'flex' : 'none'
     document.getElementById('um-adm').style.display  = isAdmin ? 'block' : 'none'
+    document.getElementById('nb-ocr').style.display  = isAdmin ? 'flex' : 'none'
 
     // Verifica primeiro acesso — só para usuários não-admin
     if (perfil?.primeiro_acesso === true && perfil?.role !== 'admin') {
@@ -201,6 +205,7 @@ function irPg(p) {
   if (p === 'hid') renderHid()
   if (p === 'rel') renderRel()
   if (p === 'adm') renderAdm()
+  if (p === 'ocr') renderOcr()
   fecharOv('ov-user')
 }
 
@@ -1388,6 +1393,125 @@ document.getElementById('btn-cria-user')?.addEventListener('click', async () => 
     renderAdm()
   } catch(err) { toast('Erro: ' + err.message, 'err') }
 })
+
+// ═══════════════════════════════════════
+// ═══════════════════════════════════════
+// OCORRÊNCIAS
+// ═══════════════════════════════════════
+async function renderOcr() {
+  const el = document.getElementById('ocr-body')
+  if (!perfil || perfil.role !== 'admin') {
+    el.innerHTML = '<div class="empty"><p>Acesso restrito.</p></div>'
+    return
+  }
+  el.innerHTML = '<div class="loading">Carregando…</div>'
+  try {
+    OCR = await listarOcorrencias()
+    if (!OCR.length) {
+      el.innerHTML = '<div class="empty"><div class="ei">🚨</div><p>Nenhuma ocorrência registrada.</p></div>'
+      return
+    }
+
+    const TIPO_COR = {
+      'Atendimento APH': 'var(--blue)',
+      'Princípio de Incêndio': 'var(--red)',
+      'Vazamento de Gás': 'var(--orange)',
+      'Falha em Equipamento': 'var(--amber)',
+      'Acionamento de Alarme': 'var(--red)',
+      'Evacuação': 'var(--red)',
+      'Treinamento / Simulado': 'var(--green)',
+      'Outro': 'var(--muted)'
+    }
+
+    el.innerHTML = OCR.map(o => {
+      const cor = TIPO_COR[o.tipo] || 'var(--muted)'
+      const dataFmt = o.data_hora ? new Date(o.data_hora).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'
+      return `<div class="card" style="border-left-color:${cor}">
+        <div class="chead">
+          <div>
+            <div class="cnum" style="font-size:14px">${o.tipo}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">🕐 ${dataFmt}</div>
+          </div>
+        </div>
+        <div class="cbody">
+          <div class="cf full"><div class="fl">Local</div><div class="fv">${o.loc}</div></div>
+          ${o.descricao ? `<div class="cf full"><div class="fl">Descrição</div><div class="fv">${o.descricao}</div></div>` : ''}
+          ${o.equipe ? `<div class="cf full"><div class="fl">Equipe</div><div class="fv">${o.equipe}</div></div>` : ''}
+          ${o.acoes ? `<div class="cf full"><div class="fl">Ações</div><div class="fv">${o.acoes}</div></div>` : ''}
+          ${o.encaminhamento ? `<div class="cf full"><div class="fl">Encaminhamento</div><div class="fv">${o.encaminhamento}</div></div>` : ''}
+        </div>
+        <div class="cupd"><span>👤 ${o.upd_by||'—'}</span></div>
+        <div class="cact">
+          <button class="be" data-id="${o.id}" data-act="edit-ocr">✏️ Editar</button>
+          <button class="bd" data-id="${o.id}" data-act="del-ocr">🗑️ Excluir</button>
+        </div>
+      </div>`
+    }).join('')
+
+    el.querySelectorAll('[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.act === 'edit-ocr') editOcr(btn.dataset.id)
+        if (btn.dataset.act === 'del-ocr')  delOcr(btn.dataset.id)
+      })
+    })
+  } catch(e) {
+    el.innerHTML = `<div class="empty"><p>Erro ao carregar.<br><small>${e.message}</small></p></div>`
+  }
+}
+
+document.getElementById('btn-nova-ocr').addEventListener('click', () => {
+  editOcrId = null
+  document.getElementById('tit-ocr').textContent = 'Nova Ocorrência'
+  ;['ocr-data','ocr-hora','ocr-tipo','ocr-loc','ocr-desc','ocr-equipe','ocr-acoes','ocr-encam'].forEach(id => sv(id,''))
+  const hoje = new Date()
+  const pad = n => String(n).padStart(2,'0')
+  sv('ocr-data', hoje.getFullYear()+'-'+pad(hoje.getMonth()+1)+'-'+pad(hoje.getDate()))
+  sv('ocr-hora', pad(hoje.getHours())+':'+pad(hoje.getMinutes()))
+  abrirOv('ov-ocr')
+})
+
+document.getElementById('btn-salva-ocr').addEventListener('click', async () => {
+  const data = gv('ocr-data'), hora = gv('ocr-hora'), tipo = gv('ocr-tipo'), loc = gv('ocr-loc').trim()
+  if (!data||!hora||!tipo||!loc) { toast('⚠️ Preencha os campos obrigatórios'); return }
+
+  const payload = {
+    data_hora: new Date(data+'T'+hora).toISOString(),
+    tipo, loc,
+    descricao: gv('ocr-desc'),
+    equipe: gv('ocr-equipe'),
+    acoes: gv('ocr-acoes'),
+    encaminhamento: gv('ocr-encam'),
+    upd_by: perfil?.nome || '—'
+  }
+
+  try {
+    if (editOcrId) { await atualizarOcorrencia(editOcrId, payload); toast('✅ Ocorrência atualizada!', 'ok') }
+    else           { await inserirOcorrencia(payload);                toast('✅ Ocorrência registrada!', 'ok') }
+    fecharOv('ov-ocr')
+    renderOcr()
+  } catch(e) { toast('Erro: ' + e.message, 'err') }
+})
+
+function editOcr(id) {
+  const o = OCR.find(x => x.id === id); if (!o) return
+  editOcrId = id
+  document.getElementById('tit-ocr').textContent = 'Editar Ocorrência'
+  const d = new Date(o.data_hora)
+  const pad = n => String(n).padStart(2,'0')
+  sv('ocr-data', d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()))
+  sv('ocr-hora', pad(d.getHours())+':'+pad(d.getMinutes()))
+  sv('ocr-tipo', o.tipo); sv('ocr-loc', o.loc); sv('ocr-desc', o.descricao)
+  sv('ocr-equipe', o.equipe); sv('ocr-acoes', o.acoes); sv('ocr-encam', o.encaminhamento)
+  abrirOv('ov-ocr')
+}
+
+async function delOcr(id) {
+  const o = OCR.find(x => x.id === id); if (!o) return
+  const ok = await confirmar('🗑️', 'Excluir ocorrência', `Excluir esta ocorrência de <b>${o.tipo}</b>?`, 'Excluir')
+  if (!ok) return
+  try { await deletarOcorrencia(id); toast('🗑️ Ocorrência removida.'); renderOcr() }
+  catch(e) { toast('Erro: ' + e.message, 'err') }
+}
 
 // ═══════════════════════════════════════
 // MODAIS

@@ -185,6 +185,15 @@
       <div id="rel-body"></div>
     </div>
 
+    <!-- OCORRÊNCIAS -->
+    <div id="pg-ocr" class="pg">
+      <div class="sh">
+        <h2>🚨 Ocorrências</h2>
+        <button class="btn bred bsm" id="btn-nova-ocr">＋ Nova</button>
+      </div>
+      <div id="ocr-body"></div>
+    </div>
+
     <!-- ADMIN -->
     <div id="pg-adm" class="pg">
       <div class="sh"><h2>⚙️ Administração</h2></div>
@@ -196,6 +205,7 @@
     <button id="nb-ext" class="on" data-pg="ext"><div class="ni">🧯</div>Extintores</button>
     <button id="nb-hid" data-pg="hid"><div class="ni">💧</div>Hidrantes</button>
     <button id="nb-rel" data-pg="rel"><div class="ni">📋</div>Relatório</button>
+    <button id="nb-ocr" data-pg="ocr" style="display:none"><div class="ni">🚨</div>Ocorrências</button>
     <button id="nb-adm" data-pg="adm" style="display:none"><div class="ni">⚙️</div>Admin</button>
   </div>
   <button class="fab" id="fab">＋</button>
@@ -432,6 +442,41 @@
       <button class="btn bout bfull" data-close="ov-chk">Cancelar</button>
       <button class="btn bgreen bfull" id="btn-rel-chk">📄 Relatório</button>
       <button class="btn bblue bfull" id="btn-salva-chk">✅ Salvar Inspeção</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: OCORRÊNCIA ══ -->
+<div class="ov" id="ov-ocr">
+  <div class="modal">
+    <div class="mh"><span>🚨</span><h3 id="tit-ocr">Nova Ocorrência</h3><button class="mclose" data-close="ov-ocr">✕</button></div>
+    <div class="mbody">
+      <div class="g2">
+        <div class="mfg"><label>Data <span class="req">*</span></label><input id="ocr-data" type="date"></div>
+        <div class="mfg"><label>Hora <span class="req">*</span></label><input id="ocr-hora" type="time"></div>
+      </div>
+      <div class="mfg"><label>Tipo de Ocorrência <span class="req">*</span></label>
+        <select id="ocr-tipo">
+          <option value="">— Selecione —</option>
+          <option>Atendimento APH</option>
+          <option>Princípio de Incêndio</option>
+          <option>Vazamento de Gás</option>
+          <option>Falha em Equipamento</option>
+          <option>Acionamento de Alarme</option>
+          <option>Evacuação</option>
+          <option>Treinamento / Simulado</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Local <span class="req">*</span></label><input id="ocr-loc" placeholder="Ex: Térreo — Pronto-Socorro"></div>
+      <div class="mfg"><label>Descrição do Atendimento</label><textarea id="ocr-desc" placeholder="Descreva o que aconteceu…"></textarea></div>
+      <div class="mfg"><label>Equipe / Responsáveis</label><input id="ocr-equipe" placeholder="Nomes dos brigadistas envolvidos"></div>
+      <div class="mfg"><label>Ações Tomadas</label><textarea id="ocr-acoes" placeholder="O que foi feito…"></textarea></div>
+      <div class="mfg"><label>Encaminhamento</label><input id="ocr-encam" placeholder="Ex: Encaminhado ao PS, alta no local…"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bout bfull" data-close="ov-ocr">Cancelar</button>
+      <button class="btn bred bfull" id="btn-salva-ocr">💾 Salvar</button>
     </div>
   </div>
 </div>

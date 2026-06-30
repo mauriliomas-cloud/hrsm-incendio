@@ -86,6 +86,48 @@ export async function deletarHidrante(id) {
 
 // ══════════════════════════════════════
 // ══════════════════════════════════════
+// OCORRÊNCIAS
+// ══════════════════════════════════════
+
+export async function listarOcorrencias() {
+  const { data, error } = await supabase
+    .from('ocorrencias')
+    .select('*')
+    .order('data_hora', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function inserirOcorrencia(item) {
+  const { data, error } = await supabase
+    .from('ocorrencias')
+    .insert([item])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function atualizarOcorrencia(id, item) {
+  const { data, error } = await supabase
+    .from('ocorrencias')
+    .update(item)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deletarOcorrencia(id) {
+  const { error } = await supabase
+    .from('ocorrencias')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ══════════════════════════════════════
 // EMPRESAS
 // ══════════════════════════════════════
 
