@@ -1,7 +1,7 @@
 {
-  "name": "HRSM Brigada de Incêndio",
-  "short_name": "HRSM Incêndio",
-  "description": "Sistema de Controle de Extintores e Hidrantes",
+  "name": "Brigada 360 — HRSM",
+  "short_name": "Brigada 360",
+  "description": "Sistema de Controle de Combate a Incêndio — Brigada 360",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#7B241C",
