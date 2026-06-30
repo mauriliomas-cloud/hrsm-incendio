@@ -144,49 +144,51 @@ export function gerarRelatorio(EXT, HID, nomeUsuario, filtro = 'ext-todos') {
     b += `</tbody></table>`
   } else { b += `<p class="na">Nenhum extintor com vencimento próximo.</p>` }
 
-  // Hidrantes com itens fora de conformidade
-  const hNaoConformes = HID.filter(h => {
-    let hist = h.checklist
-    if (typeof hist === 'string') { try { hist = JSON.parse(hist) } catch(e) { return false } }
-    if (!Array.isArray(hist) || !hist.length) return false
-    const ult = hist[hist.length - 1]
-    return ['Ruim','Regular','Ausente'].some(v =>
-      [ult.mang1, ult.mang2, ult.chave, ult.esguicho, ult.abrigo, ult.registro, ult.lacre].includes(v)
-    )
-  })
-
-  b += `<h2>⚠️ Hidrantes com Itens Fora de Conformidade (${hNaoConformes.length})</h2>`
-  if (hNaoConformes.length) {
-    b += `<table><thead><tr>${['Nº','Local','Item','Status','Data Inspeção','Responsável'].map(th).join('')}</tr></thead><tbody>`
-    sortByNum(hNaoConformes).forEach(h => {
+  // Hidrantes com itens fora de conformidade — só mostra se houver hidrantes no filtro
+  if (hidF.length > 0) {
+    const hNaoConformes = hidF.filter(h => {
       let hist = h.checklist
-      if (typeof hist === 'string') { try { hist = JSON.parse(hist) } catch(e) { hist = [] } }
-      const ult  = hist[hist.length - 1]
-      const itens = [
-        { nome: 'Mangueira 1',  val: ult.mang1 },
-        { nome: 'Mangueira 2',  val: ult.mang2 },
-        { nome: 'Chave',        val: ult.chave },
-        { nome: 'Esguicho',     val: ult.esguicho },
-        { nome: 'Abrigo/Caixa', val: ult.abrigo },
-        { nome: 'Registro',     val: ult.registro },
-        { nome: 'Lacre',        val: ult.lacre },
-      ].filter(i => ['Ruim','Regular','Ausente'].includes(i.val))
-
-      itens.forEach((item, idx) => {
-        const cor = item.val === 'Regular' ? '#D68910' : '#C0392B'
-        b += `<tr>
-          ${idx === 0 ? `<td rowspan="${itens.length}" style="padding:3mm;border-bottom:.5pt solid #eee;font-weight:700">${h.num}</td>
-          <td rowspan="${itens.length}" style="padding:3mm;border-bottom:.5pt solid #eee">${h.loc}</td>` : ''}
-          ${td(item.nome)}
-          ${td(item.val, cor)}
-          ${idx === 0 ? `<td rowspan="${itens.length}" style="padding:3mm;border-bottom:.5pt solid #eee">${fmm(ult.data)}</td>
-          <td rowspan="${itens.length}" style="padding:3mm;border-bottom:.5pt solid #eee">${ult.resp||'—'}</td>` : ''}
-        </tr>`
-      })
+      if (typeof hist === 'string') { try { hist = JSON.parse(hist) } catch(e) { return false } }
+      if (!Array.isArray(hist) || !hist.length) return false
+      const ult = hist[hist.length - 1]
+      return ['Ruim','Regular','Ausente'].some(v =>
+        [ult.mang1, ult.mang2, ult.chave, ult.esguicho, ult.abrigo, ult.registro, ult.lacre].includes(v)
+      )
     })
-    b += `</tbody></table>`
-  } else {
-    b += `<p class="na">✅ Nenhum hidrante com itens fora de conformidade.</p>`
+
+    b += `<h2>⚠️ Hidrantes com Itens Fora de Conformidade (${hNaoConformes.length})</h2>`
+    if (hNaoConformes.length) {
+      b += `<table><thead><tr>${['Nº','Local','Item','Status','Data Inspeção','Responsável'].map(th).join('')}</tr></thead><tbody>`
+      sortByNum(hNaoConformes).forEach(h => {
+        let hist = h.checklist
+        if (typeof hist === 'string') { try { hist = JSON.parse(hist) } catch(e) { hist = [] } }
+        const ult  = hist[hist.length - 1]
+        const itens = [
+          { nome: 'Mangueira 1',  val: ult.mang1 },
+          { nome: 'Mangueira 2',  val: ult.mang2 },
+          { nome: 'Chave',        val: ult.chave },
+          { nome: 'Esguicho',     val: ult.esguicho },
+          { nome: 'Abrigo/Caixa', val: ult.abrigo },
+          { nome: 'Registro',     val: ult.registro },
+          { nome: 'Lacre',        val: ult.lacre },
+        ].filter(i => ['Ruim','Regular','Ausente'].includes(i.val))
+
+        itens.forEach((item, idx) => {
+          const cor = item.val === 'Regular' ? '#D68910' : '#C0392B'
+          b += `<tr>
+            ${idx === 0 ? `<td rowspan="${itens.length}" style="padding:3mm;border-bottom:.5pt solid #eee;font-weight:700">${h.num}</td>
+            <td rowspan="${itens.length}" style="padding:3mm;border-bottom:.5pt solid #eee">${h.loc}</td>` : ''}
+            ${td(item.nome)}
+            ${td(item.val, cor)}
+            ${idx === 0 ? `<td rowspan="${itens.length}" style="padding:3mm;border-bottom:.5pt solid #eee">${fmm(ult.data)}</td>
+            <td rowspan="${itens.length}" style="padding:3mm;border-bottom:.5pt solid #eee">${ult.resp||'—'}</td>` : ''}
+          </tr>`
+        })
+      })
+      b += `</tbody></table>`
+    } else {
+      b += `<p class="na">✅ Nenhum hidrante com itens fora de conformidade.</p>`
+    }
   }
 
   // Hidrantes com checklist pendente
