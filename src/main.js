@@ -13,6 +13,7 @@ import { baixarRelatorio, abrirRelatorio } from './relatorio.js'
 let EXT = [], HID = [], perfil = null
 let curPg = 'ext', editExtId = null, editHidId = null, manId = null
 let relFiltro = 'ext-todos'
+let ultimaAbaRelevante = 'ext'
 
 // ═══════════════════════════════════════
 // DETECÇÃO DE CONEXÃO
@@ -151,6 +152,8 @@ async function carregarHid() {
 function irPg(p) {
   const pgAnterior = curPg
   curPg = p
+  if (p === 'ext' || p === 'hid') ultimaAbaRelevante = p
+
   document.querySelectorAll('.pg').forEach(el => el.classList.remove('on'))
   document.getElementById('pg-' + p)?.classList.add('on')
   document.querySelectorAll('.bnav button').forEach(b => {
@@ -158,13 +161,19 @@ function irPg(p) {
   })
   document.getElementById('fab').style.display = (p === 'ext' || p === 'hid') ? 'flex' : 'none'
 
-  // Seleciona filtro de relatório automaticamente baseado na aba anterior
+  // Seleciona filtro de relatório automaticamente baseado na última aba relevante
   if (p === 'rel') {
-    const filtroAuto = pgAnterior === 'hid' ? 'hid-todos' : 'ext-todos'
+    const veioDeHid = ultimaAbaRelevante === 'hid'
+    const filtroAuto = veioDeHid ? 'hid-todos' : 'ext-todos'
     document.querySelectorAll('.btn-rel-opt').forEach(b => {
       b.classList.toggle('on', b.dataset.rel === filtroAuto)
     })
     relFiltro = filtroAuto
+
+    // Mostra só a seção relevante
+    document.getElementById('rel-secao-ext').style.display = veioDeHid ? 'none' : 'block'
+    document.getElementById('rel-secao-hid').style.display = veioDeHid ? 'block' : 'none'
+    document.getElementById('rel-titulo-pg').textContent = veioDeHid ? '📋 Relatório — Hidrantes' : '📋 Relatório — Extintores'
   }
 
   if (p === 'ext') renderExt()
