@@ -125,9 +125,10 @@ async function iniciarApp() {
     const isAdmin = perfil?.nivel === 'admin' || perfil?.nivel === 'dev' || perfil?.role === 'admin'
     const isUser  = true // todos têm acesso básico
 
-    document.getElementById('nb-adm').style.display = isAdmin ? 'flex' : 'none'
-    document.getElementById('um-adm').style.display  = isAdmin ? 'block' : 'none'
-    document.getElementById('nb-ocr').style.display  = isDev   ? 'flex' : 'none'
+    document.getElementById('nb-adm').style.display  = isAdmin ? 'flex' : 'none'
+    document.getElementById('um-adm').style.display   = isAdmin ? 'block' : 'none'
+    document.getElementById('nb-ocr').style.display   = isDev   ? 'flex' : 'none'
+    document.getElementById('nb-dash').style.display  = isDev   ? 'flex' : 'none'
 
     // Verifica primeiro acesso — só para usuários não-admin
     if (perfil?.primeiro_acesso === true && perfil?.nivel !== 'dev' && perfil?.role !== 'admin') {
@@ -219,8 +220,9 @@ function irPg(p) {
   if (p === 'ext') renderExt()
   if (p === 'hid') renderHid()
   if (p === 'rel') renderRel()
-  if (p === 'adm') renderAdm()
-  if (p === 'ocr') renderOcr()
+  if (p === 'adm')  renderAdm()
+  if (p === 'ocr')  renderOcr()
+  if (p === 'dash') renderDash()
   fecharOv('ov-user')
 }
 
@@ -1415,6 +1417,173 @@ document.getElementById('btn-cria-user')?.addEventListener('click', async () => 
 })
 
 // ═══════════════════════════════════════
+// ═══════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════
+async function renderDash() {
+  const el = document.getElementById('dash-body')
+  if (perfil?.email !== 'maurilio.mas@gmail.com') {
+    el.innerHTML = '<div class="empty"><p>Acesso restrito.</p></div>'
+    return
+  }
+
+  const now = new Date()
+  const mes = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+
+  // Status extintores
+  const eOk   = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'ok').length
+  const eWarn = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'warn').length
+  const eVenc = EXT.filter(e => getStatus(e.validade, e.em_manut) === 'danger').length
+  const eMan  = EXT.filter(e => e.em_manut).length
+  const eTotal = EXT.length
+
+  // Por classe
+  const ap  = EXT.filter(e => e.cls === 'AP').length
+  const bc  = EXT.filter(e => e.cls === 'BC').length
+  const abc = EXT.filter(e => e.cls === 'ABC').length
+  const co2 = EXT.filter(e => e.cls === 'CO₂').length
+
+  // Hidrantes
+  const hOk   = HID.filter(h => getStatusHid(h.checklist) === 'ok').length
+  const hPend = HID.filter(h => getStatusHid(h.checklist) === 'danger').length
+  const hTotal = HID.length
+
+  // Ocorrências do mês
+  let ocrMes = 0
+  try {
+    const ocrs = await listarOcorrencias()
+    ocrMes = ocrs.filter(o => {
+      const d = new Date(o.data_hora)
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    }).length
+  } catch(e) {}
+
+  // Próximos vencimentos (extintores)
+  const proxVenc = EXT
+    .filter(e => e.validade && !e.em_manut)
+    .map(e => {
+      const [y, m] = e.validade.split('-').map(Number)
+      const diff = (y * 12 + m - 1) - (now.getFullYear() * 12 + now.getMonth())
+      return { ...e, diff }
+    })
+    .filter(e => e.diff >= 0 && e.diff <= 3)
+    .sort((a, b) => a.diff - b.diff)
+    .slice(0, 5)
+
+  // Gráfico de rosca — status extintores
+  function rosca(total, vals) {
+    if (!total) return `<svg viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="35" fill="none" stroke="#eee" stroke-width="18"/><text x="50" y="55" text-anchor="middle" font-size="14" fill="#888">0</text></svg>`
+    let offset = 25
+    const r = 35, circ = 2 * Math.PI * r
+    const segs = vals.map(v => {
+      const pct = v.val / total
+      const dash = pct * circ
+      const gap  = circ - dash
+      const seg  = `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${v.cor}" stroke-width="18" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset}" transform="rotate(-90 50 50)"/>`
+      offset += pct * circ
+      return seg
+    })
+    return `<svg viewBox="0 0 100 100" width="100" height="100">${segs.join('')}<text x="50" y="52" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">${total}</text><text x="50" y="64" text-anchor="middle" font-size="8" fill="#888">total</text></svg>`
+  }
+
+  // Gráfico de barras — classes
+  function barras(dados) {
+    const max = Math.max(...dados.map(d => d.val), 1)
+    const barW = 32, gap = 10, h = 80
+    const w = dados.length * (barW + gap)
+    const bars = dados.map((d, i) => {
+      const bh = (d.val / max) * (h - 20)
+      const x  = i * (barW + gap)
+      const y  = h - 20 - bh
+      return `
+        <rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="4" fill="${d.cor}"/>
+        <text x="${x + barW/2}" y="${h - 8}" text-anchor="middle" font-size="9" fill="#888">${d.label}</text>
+        <text x="${x + barW/2}" y="${y - 4}" text-anchor="middle" font-size="11" font-weight="bold" fill="${d.cor}">${d.val}</text>
+      `
+    }).join('')
+    return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">${bars}</svg>`
+  }
+
+  const svgStatus = rosca(eTotal, [
+    { val: eOk,   cor: '#1E8449' },
+    { val: eWarn, cor: '#D68910' },
+    { val: eVenc, cor: '#C0392B' },
+    { val: eMan,  cor: '#E67E22' },
+  ])
+
+  const svgClasses = barras([
+    { label: 'AP',   val: ap,  cor: '#1A5276' },
+    { label: 'BC',   val: bc,  cor: '#7D6608' },
+    { label: 'ABC',  val: abc, cor: '#1E8449' },
+    { label: 'CO₂',  val: co2, cor: '#6C3483' },
+  ])
+
+  const svgHid = rosca(hTotal, [
+    { val: hOk,   cor: '#1E8449' },
+    { val: hPend, cor: '#C0392B' },
+  ])
+
+  el.innerHTML = `
+  <div style="font-size:11px;color:var(--muted);margin-bottom:12px">📅 ${mes}</div>
+
+  <!-- CARDS RESUMO -->
+  <div class="stats" style="margin-bottom:16px">
+    ${mkSt('Extintores', eTotal, 'total', '')}
+    ${mkSt('Em dia', eOk, 'OK', 'cg')}
+    ${mkSt('Atenção', eWarn, '60 dias', 'ca')}
+    ${mkSt('Vencidos', eVenc, 'urgente', 'cr')}
+    ${mkSt('Hidrantes', hTotal, 'total', '')}
+    ${mkSt('Checklist OK', hOk, 'este mês', 'cg')}
+    ${mkSt('Pendente', hPend, 'este mês', 'cr')}
+    ${mkSt('Ocorrências', ocrMes, 'este mês', '')}
+  </div>
+
+  <!-- GRÁFICOS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+
+    <div class="rcard">
+      <div class="rhdr rinfo">🧯 Status dos Extintores</div>
+      <div style="padding:14px;display:flex;align-items:center;gap:16px">
+        ${svgStatus}
+        <div style="font-size:12px;display:flex;flex-direction:column;gap:6px">
+          <div><span style="color:#1E8449;font-weight:700">${eOk}</span> Em dia</div>
+          <div><span style="color:#D68910;font-weight:700">${eWarn}</span> Atenção</div>
+          <div><span style="color:#C0392B;font-weight:700">${eVenc}</span> Vencidos</div>
+          <div><span style="color:#E67E22;font-weight:700">${eMan}</span> Manutenção</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rcard">
+      <div class="rhdr rinfo">💧 Hidrantes — Checklist</div>
+      <div style="padding:14px;display:flex;align-items:center;gap:16px">
+        ${svgHid}
+        <div style="font-size:12px;display:flex;flex-direction:column;gap:6px">
+          <div><span style="color:#1E8449;font-weight:700">${hOk}</span> Checklist OK</div>
+          <div><span style="color:#C0392B;font-weight:700">${hPend}</span> Pendentes</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="rcard" style="margin-bottom:16px">
+    <div class="rhdr rinfo">🧯 Extintores por Classe</div>
+    <div style="padding:14px;display:flex;justify-content:center">${svgClasses}</div>
+  </div>
+
+  <!-- PRÓXIMOS VENCIMENTOS -->
+  <div class="rcard">
+    <div class="rhdr rwarn">⚠️ Próximos Vencimentos (até 3 meses)</div>
+    ${proxVenc.length ? proxVenc.map(e => `
+      <div class="rrow">
+        <div><div class="rnum">${e.num}</div>${clsBadge(e.cls)}</div>
+        <div class="rloc">${e.loc}</div>
+        <div><div class="rdt" style="color:var(--amber)">${fmm(e.validade)}</div><div class="rby">${e.diff === 0 ? 'Este mês' : `Em ${e.diff} mês${e.diff > 1 ? 'es' : ''}`}</div></div>
+      </div>`).join('') : '<div class="na">✅ Nenhum vencimento nos próximos 3 meses.</div>'}
+  </div>`
+}
+
 // ═══════════════════════════════════════
 // OCORRÊNCIAS
 // ═══════════════════════════════════════
