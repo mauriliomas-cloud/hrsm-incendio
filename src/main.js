@@ -1816,6 +1816,87 @@ document.getElementById('btn-qr-print').addEventListener('click', () => {
   setTimeout(() => URL.revokeObjectURL(url), 5000)
 })
 
+function imprimirTodosQR(lista, tipo) {
+  const base = window.location.origin
+  const itens = lista.map(item => {
+    const url = `${base}?scan=${tipo}&num=${encodeURIComponent(item.num)}`
+    return { num: item.num, loc: item.loc, url }
+  })
+
+  // Gera QR Codes como Data URLs usando QRCode.js
+  const promises = itens.map(item => new Promise(resolve => {
+    const div = document.createElement('div')
+    new QRCode(div, {
+      text: item.url,
+      width: 140,
+      height: 140,
+      colorDark: '#7B241C',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    })
+    setTimeout(() => {
+      const img = div.querySelector('img') || div.querySelector('canvas')
+      const src = img?.src || (img instanceof HTMLCanvasElement ? img.toDataURL() : '')
+      resolve({ ...item, src })
+    }, 200)
+  }))
+
+  Promise.all(promises).then(dados => {
+    const etiquetas = dados.map(d => `
+      <div class="etiqueta">
+        <div class="marca">🔥 BRIGADA 360</div>
+        <img src="${d.src}" width="120" height="120">
+        <div class="num">${d.num}</div>
+        <div class="loc">${d.loc}</div>
+      </div>
+    `).join('')
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Codes — ${tipo === 'ext' ? 'Extintores' : 'Hidrantes'}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0 }
+    body { font-family: Arial, sans-serif; background: #fff }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5mm; padding: 8mm }
+    .etiqueta { border: 1.5px solid #7B241C; border-radius: 4mm; padding: 3mm; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2mm; page-break-inside: avoid }
+    .marca { font-size: 7pt; font-weight: 700; color: #7B241C; letter-spacing: 0.3px }
+    .num { font-size: 11pt; font-weight: 700; color: #7B241C }
+    .loc { font-size: 7pt; color: #555; line-height: 1.3 }
+    img { width: 110px; height: 110px }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact }
+      @page { size: A4; margin: 5mm }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid">${etiquetas}</div>
+  <script>window.onload = () => window.print()<\/script>
+</body>
+</html>`
+
+    const blob = new Blob([html], { type: 'text/html' })
+    const url  = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 10000)
+    toast(`📱 ${dados.length} QR Codes gerados!`, 'ok')
+  })
+}
+
+document.getElementById('btn-qr-ext-todos').addEventListener('click', () => {
+  if (!EXT.length) { toast('⚠️ Nenhum extintor cadastrado'); return }
+  toast('⏳ Gerando QR Codes...')
+  setTimeout(() => imprimirTodosQR(sortByNum(EXT), 'ext'), 100)
+})
+
+document.getElementById('btn-qr-hid-todos').addEventListener('click', () => {
+  if (!HID.length) { toast('⚠️ Nenhum hidrante cadastrado'); return }
+  toast('⏳ Gerando QR Codes...')
+  setTimeout(() => imprimirTodosQR(sortByNum(HID), 'hid'), 100)
+})
+
 // ═══════════════════════════════════════
 // BOTÃO VOLTAR DO ANDROID
 // ═══════════════════════════════════════
