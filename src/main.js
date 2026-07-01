@@ -121,13 +121,16 @@ async function iniciarApp() {
     document.getElementById('unm').textContent   = (perfil?.nome || '').split(' ')[0]
     document.getElementById('um-name').textContent = perfil?.nome || ''
 
-    const isAdmin = perfil?.role === 'admin'
+    const isDev   = perfil?.nivel === 'dev'   || perfil?.email === 'maurilio.mas@gmail.com'
+    const isAdmin = perfil?.nivel === 'admin' || perfil?.nivel === 'dev' || perfil?.role === 'admin'
+    const isUser  = true // todos têm acesso básico
+
     document.getElementById('nb-adm').style.display = isAdmin ? 'flex' : 'none'
     document.getElementById('um-adm').style.display  = isAdmin ? 'block' : 'none'
-    document.getElementById('nb-ocr').style.display  = isAdmin ? 'flex' : 'none'
+    document.getElementById('nb-ocr').style.display  = isDev   ? 'flex' : 'none'
 
     // Verifica primeiro acesso — só para usuários não-admin
-    if (perfil?.primeiro_acesso === true && perfil?.role !== 'admin') {
+    if (perfil?.primeiro_acesso === true && perfil?.nivel !== 'dev' && perfil?.role !== 'admin') {
       document.getElementById('ov-senha').classList.add('on')
     }
 
@@ -327,7 +330,7 @@ function renderExt() {
     el.innerHTML = '<div class="empty"><div class="ei">🧯</div><p>Nenhum extintor encontrado.</p></div>'
     return
   }
-  const isAdmin = perfil?.role === 'admin'
+  const isAdmin = perfil?.nivel === 'dev' || perfil?.nivel === 'admin' || perfil?.role === 'admin'
   el.innerHTML = data.map(e => {
     const s = getStatus(e.validade, e.em_manut)
     const manBtn = e.em_manut
@@ -409,7 +412,7 @@ function renderHid() {
     el.innerHTML = '<div class="empty"><div class="ei">💧</div><p>Nenhum hidrante encontrado.</p></div>'
     return
   }
-  const isAdminH = perfil?.role === 'admin'
+  const isAdminH = perfil?.nivel === 'dev' || perfil?.nivel === 'admin' || perfil?.role === 'admin'
   el.innerHTML = data.map(h => {
     const s = getStatusHid(h.checklist)
     const fotoHtml = h.foto_url ? `<button class="btn bout bsm" style="margin-bottom:8px;font-size:11px" onclick="verFoto('${h.foto_url}','${h.num}')">📷 Ver Foto</button>` : ''
@@ -1300,8 +1303,9 @@ async function renderAdm() {
     users.forEach(u => {
       const st  = statusOnline(u.ultimo_acesso)
       const ehEu = u.id === perfil.id
-      const ehMaster = u.email === 'maurilio.mas@gmail.com' || u.role === 'admin' && u.nome === 'Administrador HRSM'
+      const ehMaster = u.email === 'maurilio.mas@gmail.com'
       const bloq  = u.bloqueado
+      const nivelLabel = u.nivel === 'dev' ? '👑 Desenvolvedor' : u.nivel === 'admin' ? '🔑 Administrador' : '👤 Usuário'
       h += `<div class="urow">
         <div class="uav2" style="${bloq ? 'background:#FADBD8;color:#C0392B' : ''}">${(u.nome||'?').charAt(0).toUpperCase()}</div>
         <div class="uinfo">
@@ -1311,7 +1315,7 @@ async function renderAdm() {
             ${ehEu ? '<span style="font-size:10px;color:#1A5276;font-weight:700;margin-left:6px">VOCÊ</span>' : ''}
           </div>
           <div class="ul" style="display:flex;flex-direction:column;gap:2px">
-            <span>${u.role==='admin'?'<b style="color:#C0392B">Administrador</b>':'Usuário'}</span>
+            <span>${nivelLabel}</span>
             <span style="font-size:10px;color:${st.cor}">${st.label}</span>
           </div>
         </div>
@@ -1412,7 +1416,7 @@ document.getElementById('btn-cria-user')?.addEventListener('click', async () => 
 // ═══════════════════════════════════════
 async function renderOcr() {
   const el = document.getElementById('ocr-body')
-  if (!perfil || perfil.role !== 'admin') {
+  if (perfil?.email !== 'maurilio.mas@gmail.com') {
     el.innerHTML = '<div class="empty"><p>Acesso restrito.</p></div>'
     return
   }
