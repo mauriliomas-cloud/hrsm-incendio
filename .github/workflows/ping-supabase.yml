@@ -1,0 +1,20 @@
+name: Ping Supabase — Manter Projeto Ativo
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Todo dia às 6h de Brasília (9h UTC)
+  workflow_dispatch:       # Permite rodar manualmente se precisar
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          echo "🔥 Brigada 360 — Ping diário Supabase"
+          curl -s -o /dev/null -w "Status: %{http_code}" \
+            "https://bwumbwmwsmtqjmlzvpnx.supabase.co/rest/v1/perfis?select=id&limit=1" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3dW1id213c210cWptbHp2cG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDM1NDcsImV4cCI6MjA5ODA3OTU0N30.DgTSbIvEvPzkhv0z2Xvy5ea9uN7GqBfJBN8PAhnkiVg" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3dW1id213c210cWptbHp2cG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDM1NDcsImV4cCI6MjA5ODA3OTU0N30.DgTSbIvEvPzkhv0z2Xvy5ea9uN7GqBfJBN8PAhnkiVg"
+          echo ""
+          echo "✅ Ping concluído!"

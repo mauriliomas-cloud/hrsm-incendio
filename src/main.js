@@ -40,8 +40,20 @@ function popularSelectEmpresas() {
 }
 
 // ═══════════════════════════════════════
-// DETECÇÃO DE CONEXÃO
+// PING AUTOMÁTICO — mantém Supabase ativo
 // ═══════════════════════════════════════
+async function pingSupabase() {
+  try {
+    await supabase.from('perfis').select('id').limit(1)
+    console.log('✅ Ping Supabase OK')
+  } catch(e) {
+    console.warn('Ping falhou:', e.message)
+  }
+}
+
+// Ping a cada 24 horas
+setInterval(pingSupabase, 24 * 60 * 60 * 1000)
+pingSupabase() // Ping imediato ao abrir o app
 window.addEventListener('online', () => {
   toast('✅ Conexão restaurada!', 'ok')
   carregarExt()
