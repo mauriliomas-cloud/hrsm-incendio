@@ -658,6 +658,7 @@ document.getElementById('ef-empresa').addEventListener('change', async function(
 })
 
 document.getElementById('btn-salva-ext').addEventListener('click', async () => {
+  if (isModoTeste()) return
   const btn = document.getElementById('btn-salva-ext')
   if (btn.disabled) return
   btn.disabled = true
@@ -809,6 +810,7 @@ function abrirHid() {
 }
 
 document.getElementById('btn-salva-hid').addEventListener('click', async () => {
+  if (isModoTeste()) return
   const btn = document.getElementById('btn-salva-hid')
   if (btn.disabled) return
   btn.disabled = true
@@ -1210,6 +1212,7 @@ function gerarRelatorioChecklist(h) {
 }
 
 document.getElementById('btn-salva-chk').addEventListener('click', async () => {
+  if (isModoTeste()) return
   const h = HID.find(x => x.id === chkId)
   if (!h) return
 
@@ -1395,6 +1398,7 @@ async function renderAdm() {
 }
 
 document.getElementById('btn-cria-user')?.addEventListener('click', async () => {
+  if (isModoTeste()) return
   const email = gv('nu-e').trim()
   const nome  = gv('nu-n').trim()
   const senha = gv('nu-s')
@@ -1487,6 +1491,7 @@ document.getElementById('btn-nova-ocr').addEventListener('click', () => {
 })
 
 document.getElementById('btn-salva-ocr').addEventListener('click', async () => {
+  if (isModoTeste()) return
   const data = gv('ocr-data'), hora = gv('ocr-hora'), tipo = gv('ocr-tipo'), loc = gv('ocr-loc').trim()
   if (!data||!hora||!tipo||!loc) { toast('⚠️ Preencha os campos obrigatórios'); return }
 
@@ -1543,6 +1548,17 @@ document.querySelectorAll('.ov').forEach(o => {
     if (e.target === o && o.id !== 'ov-conf') fecharOv(o.id)
   })
 })
+
+// ═══════════════════════════════════════
+// MODO TESTE
+// ═══════════════════════════════════════
+function isModoTeste() {
+  if (perfil?.modo_teste) {
+    toast('🔒 Modo demonstração — alterações não permitidas', 'err')
+    return true
+  }
+  return false
+}
 
 // ═══════════════════════════════════════
 // BOTÃO VOLTAR DO ANDROID
