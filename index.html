@@ -8,6 +8,7 @@
   <link rel="manifest" href="/manifest.json">
   <title>Brigada 360 — HRSM</title>
   <link rel="stylesheet" href="/src/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -485,6 +486,18 @@
     <div class="mfoot">
       <button class="btn bout bfull" data-close="ov-ocr">Cancelar</button>
       <button class="btn bred bfull" id="btn-salva-ocr">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: QR CODE ══ -->
+<div class="ov center" id="ov-qr">
+  <div class="modal sm">
+    <div class="mh"><span>📱</span><h3 id="tit-qr">QR Code</h3><button class="mclose" data-close="ov-qr">✕</button></div>
+    <div class="mbody" style="text-align:center">
+      <div id="qr-canvas" style="display:flex;justify-content:center;margin:16px 0"></div>
+      <div id="qr-info" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
+      <button class="btn bblue bfull" id="btn-qr-print">🖨️ Imprimir QR Code</button>
     </div>
   </div>
 </div>

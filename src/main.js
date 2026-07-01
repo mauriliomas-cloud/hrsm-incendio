@@ -40,6 +40,30 @@ function popularSelectEmpresas() {
 }
 
 // ═══════════════════════════════════════
+// ═══════════════════════════════════════
+// DETECÇÃO DE QR CODE ESCANEADO
+// ═══════════════════════════════════════
+function verificarQRScan() {
+  const params = new URLSearchParams(window.location.search)
+  const tipo   = params.get('scan')
+  const num    = params.get('num')
+  if (!tipo || !num) return
+
+  window.history.replaceState({}, '', window.location.pathname)
+
+  const tentativa = setInterval(() => {
+    if (tipo === 'ext') {
+      const e = EXT.find(x => x.num === num)
+      if (e) { clearInterval(tentativa); irPg('ext'); setTimeout(() => editExt(e.id), 300) }
+    } else if (tipo === 'hid') {
+      const h = HID.find(x => x.num === num)
+      if (h) { clearInterval(tentativa); irPg('hid'); setTimeout(() => abrirChecklist(h.id), 300) }
+    }
+  }, 500)
+  setTimeout(() => clearInterval(tentativa), 5000)
+}
+
+// ═══════════════════════════════════════
 // PING AUTOMÁTICO — mantém Supabase ativo
 // ═══════════════════════════════════════
 async function pingSupabase() {
@@ -155,6 +179,7 @@ async function iniciarApp() {
 
     await Promise.all([carregarExt(), carregarHid(), carregarEmpresas()])
     irPg('ext')
+    verificarQRScan()
 
     // Realtime — evita duplicar canais
     try {
@@ -366,6 +391,7 @@ function renderExt() {
       <div class="cupd"><span>👤 ${e.upd_by||'—'}</span><span>🕐 ${fdt(e.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${e.id}" data-act="edit-ext">✏️ Editar</button>
+        <button class="be" data-id="${e.id}" data-num="${e.num}" data-act="qr-ext">📱 QR</button>
         ${manBtn}
         ${delBtn}
       </div>
@@ -381,6 +407,7 @@ function renderExt() {
       if (act === 'del-ext')  delExt(id)
       if (act === 'man')      abrirMan(id, 'said')
       if (act === 'ret')      abrirMan(id, 'ret')
+      if (act === 'qr-ext')   abrirQR(btn.dataset.num, 'ext')
     })
   })
 }
@@ -435,6 +462,7 @@ function renderHid() {
       <div class="cupd"><span>👤 ${h.upd_by||'—'}</span><span>🕐 ${fdt(h.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${h.id}" data-act="edit-hid">✏️ Editar</button>
+        <button class="be" data-id="${h.id}" data-num="${h.num}" data-act="qr-hid">📱 QR</button>
         <button class="bmo" data-id="${h.id}" data-act="chk-hid">📋 Checklist</button>
         ${delBtn}
       </div>
@@ -446,6 +474,7 @@ function renderHid() {
       if (btn.dataset.act === 'edit-hid') editHid(btn.dataset.id)
       if (btn.dataset.act === 'del-hid')  delHid(btn.dataset.id)
       if (btn.dataset.act === 'chk-hid')  abrirChecklist(btn.dataset.id)
+      if (btn.dataset.act === 'qr-hid')   abrirQR(btn.dataset.num, 'hid')
     })
   })
 }
@@ -1728,6 +1757,64 @@ function isModoTeste() {
   }
   return false
 }
+
+// ═══════════════════════════════════════
+// QR CODE
+// ═══════════════════════════════════════
+function abrirQR(num, tipo) {
+  const url = `${window.location.origin}?scan=${tipo}&num=${encodeURIComponent(num)}`
+  document.getElementById('tit-qr').textContent = `QR Code — ${num}`
+  document.getElementById('qr-info').textContent = `Escaneie para abrir a ficha do ${tipo === 'ext' ? 'extintor' : 'hidrante'} ${num}`
+
+  const canvas = document.getElementById('qr-canvas')
+  canvas.innerHTML = ''
+  new QRCode(canvas, {
+    text: url,
+    width: 200,
+    height: 200,
+    colorDark: '#7B241C',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  })
+  abrirOv('ov-qr')
+}
+
+document.getElementById('btn-qr-print').addEventListener('click', () => {
+  const titulo = document.getElementById('tit-qr').textContent
+  const info   = document.getElementById('qr-info').textContent
+  const canvas = document.getElementById('qr-canvas')
+  const img    = canvas.querySelector('img') || canvas.querySelector('canvas')
+  const src    = img?.src || (img instanceof HTMLCanvasElement ? img.toDataURL() : '')
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>${titulo}</title>
+<style>
+  body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #fff }
+  .card { border: 2px solid #7B241C; border-radius: 12px; padding: 24px; text-align: center; width: 220px }
+  .logo { font-size: 32px; margin-bottom: 8px }
+  h2 { color: #7B241C; margin: 0 0 4px; font-size: 18px }
+  p { color: #666; font-size: 11px; margin: 0 0 16px }
+  img { width: 180px; height: 180px }
+  .rodape { margin-top: 12px; font-size: 10px; color: #999 }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🔥</div>
+    <h2>${titulo.replace('QR Code — ', '')}</h2>
+    <p>${info}</p>
+    <img src="${src}">
+    <div class="rodape">Brigada 360 — HRSM</div>
+  </div>
+  <script>window.onload = () => window.print()<\/script>
+</body></html>`
+
+  const blob = new Blob([html], { type: 'text/html' })
+  const url  = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+  setTimeout(() => URL.revokeObjectURL(url), 5000)
+})
 
 // ═══════════════════════════════════════
 // BOTÃO VOLTAR DO ANDROID
