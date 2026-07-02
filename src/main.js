@@ -521,45 +521,48 @@ const LOCAIS = {
     'Almoxarifado','Anatomia','APC','Auditório',
     'Centro Cirúrgico Externo','Centro Cirúrgico Interno',
     'Centro Obstétrico Externo','Centro Obstétrico Interno',
-    'CME Externo','CME Interno','Copa — Centro Cirúrgico','Copa dos Vigilantes',
+    'CME Externo','CME Interno',
+    'Copa — Centro Cirúrgico','Copa dos Vigilantes',
     'Corredor Central','Corredor da Administração','Corredor — Fisioterapia e Anatomia',
-    'Farmácia','Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C',
-    'Hotelaria','Núcleo de Mobilidade (NUMOB)','Refeitório','Salão do Auditório','UTI Neonatal'
-  ],
+    'Farmácia',
+    'Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C',
+    'Hotelaria','Núcleo de Mobilidade (NUMOB)',
+    'Refeitório','Salão do Auditório','UTI Neonatal'
+  ].sort(),
   ps: [
     'Corredor — PS Infantil','Corredor — PS / Triagem',
     'Espaço Lúdico e Gerência de Emergências',
     'Guarita — Pronto-Socorro',
     'Observação Feminina','Observação Masculina',
     'Recepção — Pronto-Socorro'
-  ],
+  ].sort(),
   ambulatorio: [
     'Ambulatório Bucomaxilo',
     'Fisioterapia',
     'Jardim da Odontologia',
     'Recepção — Ambulatório'
-  ],
+  ].sort(),
   laboratorio: [
     'Banco de Leite','Banco de Sangue',
     'Laboratório',
     'Radiologia',
     'Recepção do Laboratório'
-  ],
+  ].sort(),
   andar: [
-    'Corredor Sul','Corredor AB','Corredor BC','Corredor Norte',
+    'Corredor AB','Corredor BC','Corredor Norte','Corredor Sul',
     'Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C'
-  ],
+  ].sort(),
   torre: ['Torre A','Torre B','Torre C'],
   mezanino: ['Ala Norte','Ala Sul'],
   subsolo: [
     'Casa de Bombas','Corredor — Grupo Gerador','Corredor — Subestação',
     'Quadros Gerais de Distribuição Elétrica','Sala de Nobreak'
-  ],
+  ].sort(),
   externa: [
     'Anexo','Área de Gases — Oxigênio','Caldeira Interna','Depósito',
     'Guarita — Área de Gases','Guarita — Portaria Central',
     'Heliponto','Pátio — Frente da Caldeira','Resíduos Sólidos'
-  ]
+  ].sort()
 }
 
 function filtrarSetor(tipo) {
