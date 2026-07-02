@@ -19,6 +19,8 @@ let ultimaAbaRelevante = 'ext'
 let EMPRESAS = []
 let OCR = []
 let editOcrId = null
+let isDev = false
+let isAdmin = false
 
 async function carregarEmpresas() {
   try {
@@ -145,14 +147,16 @@ async function iniciarApp() {
     document.getElementById('unm').textContent   = (perfil?.nome || '').split(' ')[0]
     document.getElementById('um-name').textContent = perfil?.nome || ''
 
-    const isDev   = perfil?.nivel === 'dev'   || perfil?.email === 'maurilio.mas@gmail.com'
-    const isAdmin = perfil?.nivel === 'admin' || perfil?.nivel === 'dev' || perfil?.role === 'admin'
+    isDev   = perfil?.nivel === 'dev'   || perfil?.email === 'maurilio.mas@gmail.com'
+    isAdmin = perfil?.nivel === 'admin' || perfil?.nivel === 'dev' || perfil?.role === 'admin'
     const isUser  = true // todos têm acesso básico
 
     document.getElementById('nb-adm').style.display  = isAdmin ? 'flex' : 'none'
     document.getElementById('um-adm').style.display   = isAdmin ? 'block' : 'none'
     document.getElementById('nb-ocr').style.display   = isDev   ? 'flex' : 'none'
     document.getElementById('nb-dash').style.display  = isDev   ? 'flex' : 'none'
+    document.getElementById('btn-qr-ext-todos').style.display = isDev ? 'inline-flex' : 'none'
+    document.getElementById('btn-qr-hid-todos').style.display = isDev ? 'inline-flex' : 'none'
 
     // Verifica primeiro acesso — só para usuários não-admin
     if (perfil?.primeiro_acesso === true && perfil?.nivel !== 'dev' && perfil?.role !== 'admin') {
@@ -357,13 +361,13 @@ function renderExt() {
     el.innerHTML = '<div class="empty"><div class="ei">🧯</div><p>Nenhum extintor encontrado.</p></div>'
     return
   }
-  const isAdmin = perfil?.nivel === 'dev' || perfil?.nivel === 'admin' || perfil?.role === 'admin'
+  const isAdminLocal = perfil?.nivel === 'dev' || perfil?.nivel === 'admin' || perfil?.role === 'admin'
   el.innerHTML = data.map(e => {
     const s = getStatus(e.validade, e.em_manut)
     const manBtn = e.em_manut
       ? `<button class="bmr" data-id="${e.id}" data-act="ret">✅ Retornou</button>`
       : `<button class="bmo" data-id="${e.id}" data-act="man">🔧 Manutenção</button>`
-    const delBtn = isAdmin ? `<button class="bd" data-id="${e.id}" data-act="del-ext">🗑️</button>` : ''
+    const delBtn = isAdminLocal ? `<button class="bd" data-id="${e.id}" data-act="del-ext">🗑️</button>` : ''
     const fotoHtml = e.foto_url ? `<button class="btn bout bsm" style="margin-bottom:8px;font-size:11px" onclick="verFoto('${e.foto_url}','${e.num}')">📷 Ver Foto</button>` : ''
     return `<div class="card ${s}">
       ${fotoHtml}
@@ -391,7 +395,7 @@ function renderExt() {
       <div class="cupd"><span>👤 ${e.upd_by||'—'}</span><span>🕐 ${fdt(e.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${e.id}" data-act="edit-ext">✏️ Editar</button>
-        <button class="be" data-id="${e.id}" data-num="${e.num}" data-act="qr-ext">📱 QR</button>
+        <button class="be" data-id="${e.id}" data-num="${e.num}" data-act="qr-ext" style="display:${isDev?'':'none'}">📱 QR</button>
         ${manBtn}
         ${delBtn}
       </div>
@@ -462,7 +466,7 @@ function renderHid() {
       <div class="cupd"><span>👤 ${h.upd_by||'—'}</span><span>🕐 ${fdt(h.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${h.id}" data-act="edit-hid">✏️ Editar</button>
-        <button class="be" data-id="${h.id}" data-num="${h.num}" data-act="qr-hid">📱 QR</button>
+        <button class="be" data-id="${h.id}" data-num="${h.num}" data-act="qr-hid" style="display:${isDev?'':'none'}">📱 QR</button>
         <button class="bmo" data-id="${h.id}" data-act="chk-hid">📋 Checklist</button>
         ${delBtn}
       </div>
