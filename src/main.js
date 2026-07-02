@@ -761,6 +761,10 @@ function abrirExt() {
   popularSelectEmpresas()
   document.getElementById('ef-foto').value = ''
   document.getElementById('ef-foto-preview').style.display = 'none'
+  // Limpa aviso de número duplicado
+  const av = document.getElementById('ef-num-aviso')
+  if (av) { av.style.display = 'none' }
+  document.getElementById('ef-num').style.borderColor = ''
   abrirOv('ov-ext')
 }
 
@@ -937,6 +941,10 @@ function abrirHid() {
   ;['hf-num','hf-tp','hf-mk','hf-dm','hf-andar','hf-setor','hf-desc','hf-ui','hf-pi','hf-pt','hf-pv','hf-obs'].forEach(id => sv(id,''))
   document.getElementById('hf-foto').value = ''
   document.getElementById('hf-foto-preview').style.display = 'none'
+  // Limpa aviso de número duplicado
+  const avH = document.getElementById('hf-num-aviso')
+  if (avH) { avH.style.display = 'none' }
+  document.getElementById('hf-num').style.borderColor = ''
   abrirOv('ov-hid')
 }
 
@@ -1923,6 +1931,60 @@ function isModoTeste() {
   }
   return false
 }
+
+// ═══════════════════════════════════════
+// VERIFICAÇÃO DE NÚMERO DUPLICADO
+// ═══════════════════════════════════════
+function verificarNumDuplicado(inputId, lista, prefixo) {
+  const input = document.getElementById(inputId)
+  if (!input) return
+
+  // Cria ou reutiliza o aviso
+  let aviso = document.getElementById(inputId + '-aviso')
+  if (!aviso) {
+    aviso = document.createElement('div')
+    aviso.id = inputId + '-aviso'
+    aviso.style.cssText = 'font-size:12px;margin-top:4px;padding:6px 10px;border-radius:8px;display:none'
+    input.parentNode.appendChild(aviso)
+  }
+
+  input.addEventListener('blur', () => {
+    // Só verifica em novo cadastro (não edição)
+    if (editExtId && inputId === 'ef-num') return
+    if (editHidId && inputId === 'hf-num') return
+
+    const raw = input.value.trim()
+    if (!raw) { aviso.style.display = 'none'; return }
+
+    // Formata igual ao sistema (ex: 1 → EXT-001)
+    const num = isNaN(raw) ? raw.toUpperCase() : `${prefixo}-${String(raw).padStart(3,'0')}`
+    const existe = lista.find(item => item.num === num)
+
+    if (existe) {
+      aviso.style.display = 'block'
+      aviso.style.background = '#FADBD8'
+      aviso.style.color = '#C0392B'
+      aviso.innerHTML = `⚠️ Número <b>${num}</b> já cadastrado em <b>${existe.loc || '—'}</b>`
+      input.style.borderColor = '#C0392B'
+    } else {
+      aviso.style.display = 'block'
+      aviso.style.background = '#D5F5E3'
+      aviso.style.color = '#1E8449'
+      aviso.innerHTML = `✅ Número <b>${num}</b> disponível`
+      input.style.borderColor = '#1E8449'
+    }
+  })
+
+  input.addEventListener('focus', () => {
+    input.style.borderColor = ''
+  })
+}
+
+// Inicializa verificações após DOM carregar
+document.addEventListener('DOMContentLoaded', () => {
+  verificarNumDuplicado('ef-num', EXT, 'EXT')
+  verificarNumDuplicado('hf-num', HID, 'HID')
+})
 
 // ═══════════════════════════════════════
 // CÂMERA — força câmera traseira
