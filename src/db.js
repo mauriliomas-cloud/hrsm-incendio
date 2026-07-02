@@ -86,6 +86,28 @@ export async function deletarHidrante(id) {
 
 // ══════════════════════════════════════
 // ══════════════════════════════════════
+// HISTÓRICO
+// ══════════════════════════════════════
+
+export async function registrarHistorico(tipo, itemId, itemNum, acao, descricao, por) {
+  const { error } = await supabase
+    .from('historico')
+    .insert([{ tipo, item_id: itemId, item_num: itemNum, acao, descricao, por }])
+  if (error) console.warn('Histórico:', error.message)
+}
+
+export async function listarHistorico(tipo, itemId) {
+  const { data, error } = await supabase
+    .from('historico')
+    .select('*')
+    .eq('tipo', tipo)
+    .eq('item_id', itemId)
+    .order('criado_em', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+// ══════════════════════════════════════
 // OCORRÊNCIAS
 // ══════════════════════════════════════
 

@@ -4,7 +4,8 @@ import {
   listarExtintores, inserirExtintor, atualizarExtintor, deletarExtintor, escutarExtintores,
   listarHidrantes,  inserirHidrante,  atualizarHidrante,  deletarHidrante, escutarHidrantes,
   listarEmpresas, inserirEmpresa,
-  listarOcorrencias, inserirOcorrencia, atualizarOcorrencia, deletarOcorrencia
+  listarOcorrencias, inserirOcorrencia, atualizarOcorrencia, deletarOcorrencia,
+  registrarHistorico, listarHistorico
 } from './db.js'
 import { fmm, fdt, sortByNum, getStatus, getStatusHid, stBadge, stBadgeHid, clsBadge, toast, confirmar } from './utils.js'
 import { baixarRelatorio, abrirRelatorio } from './relatorio.js'
@@ -395,6 +396,7 @@ function renderExt() {
       <div class="cupd"><span>👤 ${e.upd_by||'—'}</span><span>🕐 ${fdt(e.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${e.id}" data-act="edit-ext">✏️ Editar</button>
+        <button class="be" data-id="${e.id}" data-num="${e.num}" data-act="hist-ext">📋 Histórico</button>
         <button class="be" data-id="${e.id}" data-num="${e.num}" data-act="qr-ext" style="display:${isDev?'':'none'}">📱 QR</button>
         ${manBtn}
         ${delBtn}
@@ -412,6 +414,7 @@ function renderExt() {
       if (act === 'man')      abrirMan(id, 'said')
       if (act === 'ret')      abrirMan(id, 'ret')
       if (act === 'qr-ext')   abrirQR(btn.dataset.num, 'ext')
+      if (act === 'hist-ext') abrirHistorico('ext', id, btn.dataset.num)
     })
   })
 }
@@ -466,6 +469,7 @@ function renderHid() {
       <div class="cupd"><span>👤 ${h.upd_by||'—'}</span><span>🕐 ${fdt(h.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${h.id}" data-act="edit-hid">✏️ Editar</button>
+        <button class="be" data-id="${h.id}" data-num="${h.num}" data-act="hist-hid">📋 Histórico</button>
         <button class="be" data-id="${h.id}" data-num="${h.num}" data-act="qr-hid" style="display:${isDev?'':'none'}">📱 QR</button>
         <button class="bmo" data-id="${h.id}" data-act="chk-hid">📋 Checklist</button>
         ${delBtn}
@@ -479,6 +483,7 @@ function renderHid() {
       if (btn.dataset.act === 'del-hid')  delHid(btn.dataset.id)
       if (btn.dataset.act === 'chk-hid')  abrirChecklist(btn.dataset.id)
       if (btn.dataset.act === 'qr-hid')   abrirQR(btn.dataset.num, 'hid')
+      if (btn.dataset.act === 'hist-hid') abrirHistorico('hid', btn.dataset.id, btn.dataset.num)
     })
   })
 }
@@ -729,12 +734,17 @@ document.getElementById('btn-salva-ext').addEventListener('click', async () => {
     if (editExtId) {
       saved = await atualizarExtintor(editExtId, payload)
       toast('✅ Extintor atualizado!', 'ok')
+      await registrarHistorico('ext', saved.id, saved.num, 'Editado', `Dados atualizados`, perfil?.nome || '—')
     } else {
       saved = await inserirExtintor({ ...payload, em_manut: false, manut_hist: [] })
       toast('✅ Extintor cadastrado!', 'ok')
+      await registrarHistorico('ext', saved.id, saved.num, 'Cadastrado', `Novo extintor — ${saved.cls} ${saved.cap} em ${saved.loc}`, perfil?.nome || '—')
     }
     const fotoUrl = await uploadFoto('ext', saved.id)
-    if (fotoUrl) await atualizarExtintor(saved.id, { foto_url: fotoUrl })
+    if (fotoUrl) {
+      await atualizarExtintor(saved.id, { foto_url: fotoUrl })
+      await registrarHistorico('ext', saved.id, saved.num, 'Foto', 'Foto atualizada', perfil?.nome || '—')
+    }
     fecharOv('ov-ext'); await carregarExt()
   } catch(e) { toast('Erro: ' + e.message, 'err') }
   finally {
@@ -874,8 +884,15 @@ document.getElementById('btn-salva-hid').addEventListener('click', async () => {
 
     let saved
     const eraNovo = !editHidId
-    if (editHidId) { saved = await atualizarHidrante(editHidId, payload); toast('✅ Hidrante atualizado!', 'ok') }
-    else           { saved = await inserirHidrante(payload);               toast('✅ Hidrante cadastrado!', 'ok') }
+    if (editHidId) {
+      saved = await atualizarHidrante(editHidId, payload)
+      toast('✅ Hidrante atualizado!', 'ok')
+      await registrarHistorico('hid', saved.id, saved.num, 'Editado', 'Dados atualizados', perfil?.nome || '—')
+    } else {
+      saved = await inserirHidrante(payload)
+      toast('✅ Hidrante cadastrado!', 'ok')
+      await registrarHistorico('hid', saved.id, saved.num, 'Cadastrado', `Novo hidrante — ${saved.tp} em ${saved.loc}`, perfil?.nome || '—')
+    }
     const fotoUrl = await uploadFoto('hid', saved.id)
     if (fotoUrl) await atualizarHidrante(saved.id, { foto_url: fotoUrl })
     fecharOv('ov-hid'); await carregarHid()
@@ -1308,6 +1325,7 @@ document.getElementById('btn-salva-chk').addEventListener('click', async () => {
       upd_by: perfil?.nome || '—'
     })
     toast('✅ Checklist e foto salvos!', 'ok')
+    await registrarHistorico('hid', chkId, h.num, 'Checklist', `Inspeção realizada por ${perfil?.nome || '—'}`, perfil?.nome || '—')
     fecharOv('ov-chk')
     await carregarHid()
   } catch(e) { toast('Erro: ' + e.message, 'err') }
@@ -1812,6 +1830,56 @@ function isModoTeste() {
     return true
   }
   return false
+}
+
+// ═══════════════════════════════════════
+// HISTÓRICO
+// ═══════════════════════════════════════
+async function abrirHistorico(tipo, id, num) {
+  document.getElementById('tit-hist').textContent = `Histórico — ${num}`
+  document.getElementById('hist-body').innerHTML = '<div class="loading" style="padding:16px">Carregando…</div>'
+  abrirOv('ov-hist')
+
+  try {
+    const hist = await listarHistorico(tipo, id)
+
+    const ACAO_ICON = {
+      'Cadastrado': '🆕',
+      'Editado': '✏️',
+      'Foto': '📷',
+      'Checklist': '📋',
+      'Manutenção — Saída': '🔧',
+      'Manutenção — Retorno': '✅',
+    }
+
+    if (!hist.length) {
+      document.getElementById('hist-body').innerHTML = '<div class="empty" style="padding:24px"><p>Nenhum registro no histórico ainda.</p></div>'
+      return
+    }
+
+    document.getElementById('hist-body').innerHTML = hist.map((h, i) => {
+      const icon = ACAO_ICON[h.acao] || '📌'
+      const data = new Date(h.criado_em).toLocaleString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      })
+      const isLast = i === hist.length - 1
+      return `
+        <div style="display:flex;gap:12px;padding:12px 16px;${!isLast ? 'border-bottom:1px solid var(--bdr)' : ''}">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--redl);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${icon}</div>
+            ${!isLast ? '<div style="width:2px;flex:1;background:var(--bdr)"></div>' : ''}
+          </div>
+          <div style="flex:1;padding-top:4px">
+            <div style="font-size:13px;font-weight:600;color:var(--ink)">${h.acao}</div>
+            ${h.descricao ? `<div style="font-size:12px;color:var(--ink2);margin-top:2px">${h.descricao}</div>` : ''}
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">👤 ${h.por||'—'} · 🕐 ${data}</div>
+          </div>
+        </div>`
+    }).join('')
+  } catch(e) {
+    document.getElementById('hist-body').innerHTML = `<div class="empty" style="padding:24px"><p>Erro: ${e.message}</p></div>`
+  }
 }
 
 // ═══════════════════════════════════════
