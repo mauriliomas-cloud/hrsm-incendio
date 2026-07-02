@@ -304,7 +304,7 @@
         <div id="ef-foto-preview" style="display:none;margin-bottom:8px">
           <img id="ef-foto-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
         </div>
-        <input type="file" id="ef-foto" accept="image/*"  style="display:none" onchange="previewFoto('ext')">
+        <input type="file" id="ef-foto" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('ext')">
         <button type="button" class="btn bout bfull" onclick="document.getElementById('ef-foto').click()">📷 Tirar/Escolher Foto</button>
       </div>
       <div class="fsec">Observações</div>
@@ -369,7 +369,7 @@
         <div id="hf-foto-preview" style="display:none;margin-bottom:8px">
           <img id="hf-foto-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
         </div>
-        <input type="file" id="hf-foto" accept="image/*"  style="display:none" onchange="previewFoto('hid')">
+        <input type="file" id="hf-foto" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('hid')">
         <button type="button" class="btn bout bfull" onclick="document.getElementById('hf-foto').click()">📷 Tirar/Escolher Foto</button>
       </div>
       <div class="fsec">Observações</div>
@@ -399,7 +399,7 @@
         <div id="chk-foto-preview" style="display:none;margin-bottom:8px">
           <img id="chk-foto-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
         </div>
-        <input type="file" id="chk-foto" accept="image/*"  style="display:none" onchange="previewFotoChk()">
+        <input type="file" id="chk-foto" accept="image/*" capture="environment" style="display:none" onchange="previewFotoChk()">
         <button type="button" class="btn bout bfull" onclick="document.getElementById('chk-foto').click()">📷 Tirar Foto Atualizada</button>
         <div style="font-size:11px;color:var(--muted);margin-top:6px">Tire uma foto nova para comparar com os itens informados abaixo.</div>
       </div>
