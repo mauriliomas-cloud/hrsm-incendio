@@ -524,7 +524,7 @@ const LOCAIS = {
     'CME Externo','CME Interno',
     'Copa — Centro Cirúrgico','Copa dos Vigilantes',
     'Corredor Central','Corredor da Administração','Corredor — Fisioterapia e Anatomia',
-    'Farmácia',
+    'Farmácia','Fisioterapia',
     'Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C',
     'Hotelaria','Núcleo de Mobilidade (NUMOB)',
     'Refeitório','Salão do Auditório','UTI Neonatal'
@@ -532,15 +532,17 @@ const LOCAIS = {
   ps: [
     'Corredor — PS Infantil','Corredor — PS / Triagem',
     'Espaço Lúdico e Gerência de Emergências',
-    'Guarita — Pronto-Socorro',
     'Observação Feminina','Observação Masculina',
     'Recepção — Pronto-Socorro'
   ].sort(),
   ambulatorio: [
-    'Ambulatório Bucomaxilo',
-    'Fisioterapia',
     'Jardim da Odontologia',
     'Recepção — Ambulatório'
+  ].sort(),
+  odontologico: [
+    'Ambulatório Bucomaxilo',
+    'Corredor — Odontológico',
+    'Recepção — Odontológico'
   ].sort(),
   laboratorio: [
     'Banco de Leite','Banco de Sangue',
@@ -553,14 +555,14 @@ const LOCAIS = {
     'Hall Elevador — Bloco A','Hall Elevador — Bloco B','Hall Elevador — Bloco C'
   ].sort(),
   torre: ['Torre A','Torre B','Torre C'],
-  mezanino: ['Ala Norte','Ala Sul'],
+  mezanino: ['Ala Norte','Ala Sul','Bloco A','Bloco C','Bloco D'].sort(),
   subsolo: [
     'Casa de Bombas','Corredor — Grupo Gerador','Corredor — Subestação',
     'Quadros Gerais de Distribuição Elétrica','Sala de Nobreak'
   ].sort(),
   externa: [
     'Anexo','Área de Gases — Oxigênio','Caldeira Interna','Depósito',
-    'Guarita — Área de Gases','Guarita — Portaria Central',
+    'Guarita — Área de Gases','Guarita — Portaria Central','Guarita — Pronto-Socorro',
     'Heliponto','Pátio — Frente da Caldeira','Resíduos Sólidos'
   ].sort()
 }
@@ -572,15 +574,33 @@ function filtrarSetor(tipo) {
   sel.innerHTML = '<option value="">— Selecione o Setor —</option>'
 
   let lista = []
-  if (andar === 'terreo')      lista = LOCAIS.terreo
-  else if (andar === 'ps')          lista = LOCAIS.ps
-  else if (andar === 'ambulatorio') lista = LOCAIS.ambulatorio
-  else if (andar === 'laboratorio') lista = LOCAIS.laboratorio
+  if (andar === 'terreo')            lista = LOCAIS.terreo
+  else if (andar === 'ps')           lista = LOCAIS.ps
+  else if (andar === 'ambulatorio')  lista = LOCAIS.ambulatorio
+  else if (andar === 'odontologico') lista = LOCAIS.odontologico
+  else if (andar === 'laboratorio')  lista = LOCAIS.laboratorio
   else if (['1andar','2andar','3andar','4andar','5andar'].includes(andar)) lista = LOCAIS.andar
   else if (andar === 'torre')    lista = LOCAIS.torre
   else if (andar === 'mezanino') lista = LOCAIS.mezanino
   else if (andar === 'subsolo')  lista = LOCAIS.subsolo
   else if (andar === 'externa')  lista = LOCAIS.externa
+  else if (andar === 'outro') {
+    // Mostra campo de texto para digitar o andar/área
+    const outroAndDiv = document.getElementById(prefix+'-outro-and-div')
+    if (!outroAndDiv) {
+      const div = document.createElement('div')
+      div.className = 'mfg'
+      div.id = prefix+'-outro-and-div'
+      div.innerHTML = '<label>Digite o Andar/Área</label><input id="'+prefix+'-outro-and-input" placeholder="Ex: Bloco X...">'
+      document.getElementById(prefix+'-andar').parentNode.after(div)
+    }
+    sel.innerHTML = '<option value="">— Digite o andar acima —</option>'
+    return
+  }
+
+  // Remove campo de outro andar se existir
+  const outroAndDiv = document.getElementById(prefix+'-outro-and-div')
+  if (outroAndDiv) outroAndDiv.remove()
 
   // Admin pode adicionar "Outro"
   lista.forEach(function(s){ sel.innerHTML += '<option>'+s+'</option>' })
@@ -609,7 +629,8 @@ function montarLocal(tipo) {
   const andar  = document.getElementById(prefix+'-andar').value
   const setor  = document.getElementById(prefix+'-setor').value
   const andares = {
-    'terreo':'Térreo','ps':'Pronto-Socorro','ambulatorio':'Ambulatório','laboratorio':'Laboratório',
+    'terreo':'Térreo','ps':'Pronto-Socorro','ambulatorio':'Ambulatório',
+    'odontologico':'Odontológico','laboratorio':'Laboratório',
     '1andar':'1º Andar','2andar':'2º Andar','3andar':'3º Andar','4andar':'4º Andar','5andar':'5º Andar',
     'torre':'Torre','mezanino':'Mezanino','subsolo':'Subsolo','externa':'Área Externa'
   }
@@ -619,9 +640,15 @@ function montarLocal(tipo) {
     const inp = document.getElementById(prefix+'-outro-input')
     setorFinal = inp ? inp.value.trim() : ''
   }
-  if (!setorFinal) return ''
-  const andarLabel = andares[andar] || ''
-  return andarLabel ? andarLabel + ' — ' + setorFinal : setorFinal
+
+  let andarLabel = andares[andar] || ''
+  if (andar === 'outro') {
+    const inp = document.getElementById(prefix+'-outro-and-input')
+    andarLabel = inp ? inp.value.trim() : ''
+  }
+
+  if (!setorFinal && !andarLabel) return ''
+  return andarLabel ? andarLabel + (setorFinal ? ' — ' + setorFinal : '') : setorFinal
 }
 
 // ═══════════════════════════════════════
@@ -670,9 +697,10 @@ async function uploadFoto(tipo, id) {
 }
 
 // Setores dentro do prédio (para reconstituir andar/setor ao editar)
-const SETORES_PREDIO = ['terreo','ps','ambulatorio','laboratorio','andar','torre','mezanino','subsolo','externa']
+const SETORES_PREDIO = ['terreo','ps','ambulatorio','odontologico','laboratorio','andar','torre','mezanino','subsolo','externa']
 const ANDAR_MAP = {
-  'Térreo':'terreo','Pronto-Socorro':'ps','Ambulatório':'ambulatorio','Laboratório':'laboratorio',
+  'Térreo':'terreo','Pronto-Socorro':'ps','Ambulatório':'ambulatorio',
+  'Odontológico':'odontologico','Laboratório':'laboratorio',
   '1º Andar':'1andar','2º Andar':'2andar','3º Andar':'3andar','4º Andar':'4andar','5º Andar':'5andar',
   'Torre':'torre','Mezanino':'mezanino','Subsolo':'subsolo','Área Externa':'externa'
 }
