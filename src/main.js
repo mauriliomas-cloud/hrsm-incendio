@@ -1614,6 +1614,58 @@ async function renderDash() {
         <div class="rloc">${e.loc}</div>
         <div><div class="rdt" style="color:var(--amber)">${fmm(e.validade)}</div><div class="rby">${e.diff === 0 ? 'Este mês' : `Em ${e.diff} mês${e.diff > 1 ? 'es' : ''}`}</div></div>
       </div>`).join('') : '<div class="na">✅ Nenhum vencimento nos próximos 3 meses.</div>'}
+  </div>
+
+  <!-- MAPA DE CALOR POR ANDAR -->
+  <div class="rcard" style="margin-bottom:16px">
+    <div class="rhdr rinfo">🗺️ Mapa de Calor — Status por Andar</div>
+    <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
+      ${(() => {
+        const andares = [
+          { key: 'Térreo', label: 'Térreo' },
+          { key: '1º Andar', label: '1º Andar' },
+          { key: '2º Andar', label: '2º Andar' },
+          { key: '3º Andar', label: '3º Andar' },
+          { key: '4º Andar', label: '4º Andar' },
+          { key: '5º Andar', label: '5º Andar' },
+          { key: 'Torre', label: 'Torre' },
+          { key: 'Mezanino', label: 'Mezanino' },
+          { key: 'Subsolo', label: 'Subsolo' },
+          { key: 'Área Externa', label: 'Área Externa' },
+        ]
+
+        return andares.map(a => {
+          const extAndar = EXT.filter(e => e.loc && e.loc.startsWith(a.key))
+          const hidAndar = HID.filter(h => h.loc && h.loc.startsWith(a.key))
+          if (!extAndar.length && !hidAndar.length) return ''
+
+          const eOk   = extAndar.filter(e => getStatus(e.validade, e.em_manut) === 'ok').length
+          const eWarn = extAndar.filter(e => getStatus(e.validade, e.em_manut) === 'warn').length
+          const eVenc = extAndar.filter(e => getStatus(e.validade, e.em_manut) === 'danger').length
+          const hOk   = hidAndar.filter(h => getStatusHid(h.checklist) === 'ok').length
+          const hPend = hidAndar.filter(h => getStatusHid(h.checklist) === 'danger').length
+
+          const total = extAndar.length + hidAndar.length
+          const prob  = eWarn + eVenc + hPend
+          const pctOk = total > 0 ? ((total - prob) / total) * 100 : 100
+
+          const cor = pctOk === 100 ? '#1E8449' : pctOk >= 70 ? '#D68910' : '#C0392B'
+          const corBg = pctOk === 100 ? '#EAFAF1' : pctOk >= 70 ? '#FEF9E7' : '#FADBD8'
+
+          return `<div style="display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center">
+            <span style="font-size:11px;color:var(--ink2);font-weight:600">${a.label}</span>
+            <div style="height:24px;border-radius:6px;background:${corBg};position:relative;overflow:hidden">
+              <div style="height:100%;width:${pctOk}%;background:${cor};border-radius:6px;transition:width .3s"></div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;padding:0 8px;font-size:10px;color:#333;font-weight:500">
+                🧯 ${extAndar.length} · 💧 ${hidAndar.length}
+                ${prob > 0 ? `<span style="margin-left:6px;color:${cor};font-weight:700">${prob} pendente${prob > 1 ? 's' : ''}</span>` : ''}
+              </div>
+            </div>
+            <span style="font-size:10px;font-weight:700;color:${cor}">${Math.round(pctOk)}%</span>
+          </div>`
+        }).filter(Boolean).join('')
+      })()}
+    </div>
   </div>`
 }
 
