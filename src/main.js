@@ -1396,17 +1396,20 @@ document.getElementById('btn-salva-chk').addEventListener('click', async () => {
 
   try {
     // Upload da nova foto — atualiza foto principal do hidrante
-    const ext  = fotoFile.name.split('.').pop()
-    const path = 'hid/' + chkId + '.' + ext
-    const { error: upErr } = await supabase.storage.from('fotos').upload(path, fotoFile, { upsert: true })
-    if (upErr) throw upErr
-    const { data: pub } = supabase.storage.from('fotos').getPublicUrl(path)
-
-    await atualizarHidrante(chkId, {
-      checklist: hist,
-      foto_url: pub.publicUrl,
-      upd_by: perfil?.nome || '—'
-    })
+    const path = `hid/${chkId}.jpg`
+    const { error: upErr } = await supabase.storage.from('fotos').upload(path, fotoFile, { upsert: true, contentType: 'image/jpeg' })
+    if (upErr) {
+      // Tenta com extensão original se jpg falhar
+      const ext  = fotoFile.name.split('.').pop() || 'jpg'
+      const path2 = `hid/${chkId}_chk_${Date.now()}.${ext}`
+      const { error: upErr2 } = await supabase.storage.from('fotos').upload(path2, fotoFile, { upsert: true })
+      if (upErr2) throw upErr2
+      const { data: pub2 } = supabase.storage.from('fotos').getPublicUrl(path2)
+      await atualizarHidrante(chkId, { checklist: hist, foto_url: pub2.publicUrl, upd_by: perfil?.nome || '—' })
+    } else {
+      const { data: pub } = supabase.storage.from('fotos').getPublicUrl(path)
+      await atualizarHidrante(chkId, { checklist: hist, foto_url: pub.publicUrl, upd_by: perfil?.nome || '—' })
+    }
     toast('✅ Checklist e foto salvos!', 'ok')
     await registrarHistorico('hid', chkId, h.num, 'Checklist', `Inspeção realizada por ${perfil?.nome || '—'}`, perfil?.nome || '—')
     fecharOv('ov-chk')
@@ -1949,7 +1952,7 @@ async function renderSetores() {
 
     let html = ''
 
-    // Setores padrão (somente leitura)
+    // Setores padrão (com opção de deletar da lista padrão local)
     if (padroes.length) {
       html += `<div style="padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg)">Padrão do sistema</div>`
       html += padroes.map(s => `
@@ -1959,12 +1962,12 @@ async function renderSetores() {
         </div>`).join('')
     }
 
-    // Setores personalizados (editáveis)
+    // Setores personalizados (editáveis e deletáveis)
     if (custom.length) {
       html += `<div style="padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg)">Personalizados</div>`
       html += custom.map(s => `
         <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--bdr)">
-          <span style="flex:1;font-size:13px;color:var(--ink)" id="setor-nome-${s.id}">${s.nome}</span>
+          <span style="flex:1;font-size:13px;color:var(--ink)">${s.nome}</span>
           <button class="btn bout bsm setor-edit" data-id="${s.id}" data-nome="${s.nome}" style="font-size:11px;height:32px;padding:0 10px">✏️</button>
           <button class="btn bred bsm setor-del" data-id="${s.id}" data-nome="${s.nome}" style="font-size:11px;height:32px;padding:0 10px">🗑️</button>
         </div>`).join('')
