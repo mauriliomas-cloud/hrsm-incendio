@@ -7,7 +7,34 @@
   --ink:#1A1A2E; --ink2:#2C3E50; --muted:#7F8C8D;
   --bdr:#E0E4EA; --bg:#F0F2F5;
   --radius:12px; --tap:48px;
+  --card:#ffffff; --nav:#ffffff;
 }
+
+/* MODO ESCURO */
+body.dark {
+  --ink:#E0E0E0; --ink2:#B0B8C4; --muted:#666;
+  --bdr:#2A2A4A; --bg:#0F0F1E; --card:#16213E; --nav:#16213E;
+}
+body.dark .card,
+body.dark .rcard,
+body.dark .sbar,
+body.dark .sc,
+body.dark .modal,
+body.dark .mh,
+body.dark .mfoot,
+body.dark .bnav,
+body.dark .cact button,
+body.dark .bout,
+body.dark .sbar input,
+body.dark .sbar select,
+body.dark .mfg input,
+body.dark .mfg select,
+body.dark .mfg textarea,
+body.dark .lbox,
+body.dark .lfg input { background: var(--card); color: var(--ink) }
+body.dark { background: var(--bg) }
+body.dark .bnav { background: var(--nav); border-top-color: var(--bdr) }
+body.dark .topbar { background: #5B1414 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent }
 html { font-size: 16px }
 body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh }

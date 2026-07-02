@@ -67,6 +67,25 @@ function verificarQRScan() {
 }
 
 // ═══════════════════════════════════════
+// MODO ESCURO
+// ═══════════════════════════════════════
+const btnDark = document.getElementById('btn-dark')
+
+function aplicarTema() {
+  const dark = localStorage.getItem('brigada360-dark') === '1'
+  document.body.classList.toggle('dark', dark)
+  btnDark.textContent = dark ? '☀️' : '🌙'
+}
+
+btnDark.addEventListener('click', () => {
+  const dark = localStorage.getItem('brigada360-dark') === '1'
+  localStorage.setItem('brigada360-dark', dark ? '0' : '1')
+  aplicarTema()
+})
+
+aplicarTema() // Aplica ao carregar
+
+// ═══════════════════════════════════════
 // PING AUTOMÁTICO — mantém Supabase ativo
 // ═══════════════════════════════════════
 async function pingSupabase() {
