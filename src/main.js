@@ -396,7 +396,7 @@ function renderExt() {
       <div class="cupd"><span>👤 ${e.upd_by||'—'}</span><span>🕐 ${fdt(e.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${e.id}" data-act="edit-ext">✏️ Editar</button>
-        <button class="be" data-id="${e.id}" data-num="${e.num}" data-act="hist-ext">📋 Histórico</button>
+        ${isDev ? `<button class="be" data-id="${e.id}" data-num="${e.num}" data-act="hist-ext">📋 Histórico</button>` : ''}
         <button class="be" data-id="${e.id}" data-num="${e.num}" data-act="qr-ext" style="display:${isDev?'':'none'}">📱 QR</button>
         ${manBtn}
         ${delBtn}
@@ -469,7 +469,7 @@ function renderHid() {
       <div class="cupd"><span>👤 ${h.upd_by||'—'}</span><span>🕐 ${fdt(h.upd_at)}</span></div>
       <div class="cact">
         <button class="be" data-id="${h.id}" data-act="edit-hid">✏️ Editar</button>
-        <button class="be" data-id="${h.id}" data-num="${h.num}" data-act="hist-hid">📋 Histórico</button>
+        ${isDev ? `<button class="be" data-id="${h.id}" data-num="${h.num}" data-act="hist-hid">📋 Histórico</button>` : ''}
         <button class="be" data-id="${h.id}" data-num="${h.num}" data-act="qr-hid" style="display:${isDev?'':'none'}">📱 QR</button>
         <button class="bmo" data-id="${h.id}" data-act="chk-hid">📋 Checklist</button>
         ${delBtn}
