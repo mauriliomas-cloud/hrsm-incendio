@@ -1925,6 +1925,75 @@ function isModoTeste() {
 }
 
 // ═══════════════════════════════════════
+// CÂMERA — força câmera traseira
+// ═══════════════════════════════════════
+let camStream = null
+let camTarget = null // 'ext' | 'hid' | 'chk'
+
+window.abrirCamera = async function(target) {
+  camTarget = target
+  try {
+    // Para qualquer stream anterior
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null }
+
+    // Força câmera traseira
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false
+    }).catch(() =>
+      // Fallback: tenta sem exact caso não tenha câmera traseira
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false
+      })
+    )
+
+    document.getElementById('cam-video').srcObject = camStream
+    abrirOv('ov-camera')
+  } catch(e) {
+    toast('❌ Erro ao acessar câmera: ' + e.message, 'err')
+    // Fallback para input file
+    document.getElementById(camTarget === 'chk' ? 'chk-foto' : camTarget === 'ext' ? 'ef-foto' : 'hf-foto').click()
+  }
+}
+
+document.getElementById('btn-cam-capturar').addEventListener('click', () => {
+  const video  = document.getElementById('cam-video')
+  const canvas = document.getElementById('cam-canvas')
+  canvas.width  = video.videoWidth
+  canvas.height = video.videoHeight
+  canvas.getContext('2d').drawImage(video, 0, 0)
+
+  canvas.toBlob(blob => {
+    const file = new File([blob], 'foto.jpg', { type: 'image/jpeg' })
+
+    if (camTarget === 'ext') {
+      // Simula seleção no input de extintor
+      const dt = new DataTransfer(); dt.items.add(file)
+      document.getElementById('ef-foto').files = dt.files
+      previewFoto('ext')
+    } else if (camTarget === 'hid') {
+      const dt = new DataTransfer(); dt.items.add(file)
+      document.getElementById('hf-foto').files = dt.files
+      previewFoto('hid')
+    } else if (camTarget === 'chk') {
+      const dt = new DataTransfer(); dt.items.add(file)
+      document.getElementById('chk-foto').files = dt.files
+      previewFotoChk()
+    }
+
+    // Para stream e fecha modal
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null }
+    fecharOv('ov-camera')
+  }, 'image/jpeg', 0.9)
+})
+
+document.getElementById('btn-cam-cancelar').addEventListener('click', () => {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null }
+  fecharOv('ov-camera')
+})
+
+// ═══════════════════════════════════════
 // GERENCIAR SETORES (só dev)
 // ═══════════════════════════════════════
 let grupoAtualSetores = ''

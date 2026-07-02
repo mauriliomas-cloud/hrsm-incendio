@@ -305,7 +305,7 @@
           <img id="ef-foto-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
         </div>
         <input type="file" id="ef-foto" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('ext')">
-        <button type="button" class="btn bout bfull" onclick="document.getElementById('ef-foto').click()">📷 Tirar/Escolher Foto</button>
+        <button type="button" class="btn bout bfull" onclick="abrirCamera('ext')">📷 Tirar Foto</button>
       </div>
       <div class="fsec">Observações</div>
       <div class="mfg"><label>Obs.</label><textarea id="ef-obs"></textarea></div>
@@ -370,7 +370,7 @@
           <img id="hf-foto-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
         </div>
         <input type="file" id="hf-foto" accept="image/*" capture="environment" style="display:none" onchange="previewFoto('hid')">
-        <button type="button" class="btn bout bfull" onclick="document.getElementById('hf-foto').click()">📷 Tirar/Escolher Foto</button>
+        <button type="button" class="btn bout bfull" onclick="abrirCamera('hid')">📷 Tirar Foto</button>
       </div>
       <div class="fsec">Observações</div>
       <div class="mfg"><label>Obs.</label><textarea id="hf-obs"></textarea></div>
@@ -400,7 +400,7 @@
           <img id="chk-foto-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
         </div>
         <input type="file" id="chk-foto" accept="image/*" capture="environment" style="display:none" onchange="previewFotoChk()">
-        <button type="button" class="btn bout bfull" onclick="document.getElementById('chk-foto').click()">📷 Tirar Foto Atualizada</button>
+        <button type="button" class="btn bout bfull" onclick="abrirCamera('chk')">📷 Tirar Foto Atualizada</button>
         <div style="font-size:11px;color:var(--muted);margin-top:6px">Tire uma foto nova para comparar com os itens informados abaixo.</div>
       </div>
 
@@ -509,6 +509,18 @@
     <div class="mfoot">
       <button class="btn bout bfull" data-close="ov-ocr">Cancelar</button>
       <button class="btn bred bfull" id="btn-salva-ocr">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: CÂMERA ══ -->
+<div class="ov" id="ov-camera" style="z-index:9999;background:rgba(0,0,0,.95)">
+  <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px">
+    <video id="cam-video" autoplay playsinline style="width:100%;max-width:480px;border-radius:12px;background:#000"></video>
+    <canvas id="cam-canvas" style="display:none"></canvas>
+    <div style="display:flex;gap:12px">
+      <button id="btn-cam-cancelar" class="btn bout" style="height:52px;padding:0 24px;color:#fff;border-color:#fff">✕ Cancelar</button>
+      <button id="btn-cam-capturar" class="btn bred" style="height:52px;padding:0 32px;font-size:16px">📷 Capturar</button>
     </div>
   </div>
 </div>
