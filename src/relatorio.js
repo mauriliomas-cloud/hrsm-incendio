@@ -118,8 +118,8 @@ export function gerarRelatorio(EXT, HID, nomeUsuario, filtro = 'ext-todos') {
   if (isHidFiltro) {
     resumoHtml += `
     <div class="sc"><div class="sl">Total Hidrantes</div><div class="sv">${hidF.length}</div><div class="ss">cadastrados</div></div>
-    <div class="sc cr"><div class="sl">Checklist Pendente</div><div class="sv">${hVenc.length}</div><div class="ss">este mês</div></div>
-    <div class="sc cg"><div class="sl">Checklist OK</div><div class="sv">${hidF.length - hVenc.length}</div><div class="ss">feito este mês</div></div>`
+    <div class="sc cr"><div class="sl">Checklist Pendente</div><div class="sv">${hVenc.length}</div><div class="ss">30 dias</div></div>
+    <div class="sc cg"><div class="sl">Checklist OK</div><div class="sv">${hidF.length - hVenc.length}</div><div class="ss">últimos 30 dias</div></div>`
   }
   b += `<div class="resumo">${resumoHtml}</div>`
 

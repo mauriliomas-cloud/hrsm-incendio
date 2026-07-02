@@ -65,7 +65,7 @@ export function stBadge(s) {
   return `<span class="badge-st ${C[s] || 'st-warn'}">${L[s] || s}</span>`
 }
 
-/** Retorna status do hidrante — verifica se checklist foi feito esse mês */
+/** Retorna status do hidrante — verifica se checklist foi feito nos últimos 30 dias */
 export function getStatusHid(checklist) {
   if (!checklist) return 'danger'
   let hist = checklist
@@ -73,11 +73,10 @@ export function getStatusHid(checklist) {
   if (!Array.isArray(hist) || !hist.length) return 'danger'
   const ult = hist[hist.length - 1]
   if (!ult.data) return 'danger'
-  const d = new Date(ult.data)
-  const now = new Date()
-  // Verifica se foi feito no mês atual
-  if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) return 'ok'
-  return 'danger'
+  const d    = new Date(ult.data)
+  const hoje = new Date()
+  const diff = Math.floor((hoje - d) / (1000 * 60 * 60 * 24))
+  return diff <= 30 ? 'ok' : 'danger'
 }
 /** Badge HTML de status para hidrante */
 export function stBadgeHid(s) {

@@ -317,8 +317,8 @@ function stHid() {
   const pending = HID.filter(h => getStatusHid(h.checklist) === 'danger').length
   document.getElementById('st-hid').innerHTML =
     mkSt('Total', HID.length, 'cadastrados', '') +
-    mkSt('Checklist OK', ok, 'feito este mês', 'cg') +
-    mkSt('Pendente', pending, 'este mês', 'cr')
+    mkSt('Checklist OK', ok, 'últimos 30 dias', 'cg') +
+    mkSt('Pendente', pending, '30 dias', 'cr')
 }
 
 // ═══════════════════════════════════════
@@ -992,8 +992,8 @@ function renderRel() {
   }
   if (isHidFiltro) {
     statsHtml += mkSt('Hidrantes',hidFiltrados.length,'total','') +
-      mkSt('Checklist OK',hOk.length,'este mês','cg') +
-      mkSt('Pendente',hVenc.length,'este mês','cr')
+      mkSt('Checklist OK',hOk.length,'30 dias','cg') +
+      mkSt('Pendente',hVenc.length,'30 dias','cr')
   }
 
   h += `<div class="stats" style="margin-bottom:13px">${statsHtml}</div>`
@@ -1566,9 +1566,9 @@ async function renderDash() {
     ${mkSt('Atenção', eWarn, '60 dias', 'ca')}
     ${mkSt('Vencidos', eVenc, 'urgente', 'cr')}
     ${mkSt('Hidrantes', hTotal, 'total', '')}
-    ${mkSt('Checklist OK', hOk, 'este mês', 'cg')}
-    ${mkSt('Pendente', hPend, 'este mês', 'cr')}
-    ${mkSt('Ocorrências', ocrMes, 'este mês', '')}
+    ${mkSt('Checklist OK', hOk, '30 dias', 'cg')}
+    ${mkSt('Pendente', hPend, '30 dias', 'cr')}
+    ${mkSt('Ocorrências', ocrMes, '30 dias', '')}
   </div>
 
   <!-- GRÁFICOS -->
