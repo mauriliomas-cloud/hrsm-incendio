@@ -86,6 +86,49 @@ export async function deletarHidrante(id) {
 
 // ══════════════════════════════════════
 // ══════════════════════════════════════
+// SETORES PERSONALIZADOS
+// ══════════════════════════════════════
+
+export async function listarSetores(grupo) {
+  const { data, error } = await supabase
+    .from('setores')
+    .select('*')
+    .eq('grupo', grupo)
+    .order('nome')
+  if (error) throw error
+  return data
+}
+
+export async function inserirSetor(grupo, nome) {
+  const { data, error } = await supabase
+    .from('setores')
+    .insert([{ grupo, nome }])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function atualizarSetor(id, nome) {
+  const { data, error } = await supabase
+    .from('setores')
+    .update({ nome })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deletarSetor(id) {
+  const { error } = await supabase
+    .from('setores')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ══════════════════════════════════════
 // HISTÓRICO
 // ══════════════════════════════════════
 

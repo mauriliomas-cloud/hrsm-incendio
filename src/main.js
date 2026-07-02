@@ -530,7 +530,7 @@ const LOCAIS = {
     'Refeitório','Salão do Auditório','UTI Neonatal'
   ].sort(),
   ps: [
-    'Corredor — PS Infantil','Corredor — PS / Triagem',
+    'Corredor — Consultório','Corredor — PS Infantil',
     'Espaço Lúdico e Gerência de Emergências',
     'Observação Feminina','Observação Masculina',
     'Recepção — Pronto-Socorro'
@@ -540,9 +540,7 @@ const LOCAIS = {
     'Recepção — Ambulatório'
   ].sort(),
   odontologico: [
-    'Ambulatório Bucomaxilo',
-    'Corredor — Odontológico',
-    'Recepção — Odontológico'
+    'Corredor — Odontológico'
   ].sort(),
   laboratorio: [
     'Banco de Leite','Banco de Sangue',
@@ -567,11 +565,15 @@ const LOCAIS = {
   ].sort()
 }
 
-function filtrarSetor(tipo) {
+async function filtrarSetor(tipo) {
   const prefix = tipo === 'ext' ? 'ef' : 'hf'
   const andar  = document.getElementById(prefix+'-andar').value
   const sel    = document.getElementById(prefix+'-setor')
   sel.innerHTML = '<option value="">— Selecione o Setor —</option>'
+
+  // Remove campo de outro andar se existir
+  const outroAndDiv = document.getElementById(prefix+'-outro-and-div')
+  if (outroAndDiv) outroAndDiv.remove()
 
   let lista = []
   if (andar === 'terreo')            lista = LOCAIS.terreo
@@ -585,27 +587,41 @@ function filtrarSetor(tipo) {
   else if (andar === 'subsolo')  lista = LOCAIS.subsolo
   else if (andar === 'externa')  lista = LOCAIS.externa
   else if (andar === 'outro') {
-    // Mostra campo de texto para digitar o andar/área
-    const outroAndDiv = document.getElementById(prefix+'-outro-and-div')
-    if (!outroAndDiv) {
-      const div = document.createElement('div')
-      div.className = 'mfg'
-      div.id = prefix+'-outro-and-div'
-      div.innerHTML = '<label>Digite o Andar/Área</label><input id="'+prefix+'-outro-and-input" placeholder="Ex: Bloco X...">'
-      document.getElementById(prefix+'-andar').parentNode.after(div)
-    }
+    const div = document.createElement('div')
+    div.className = 'mfg'
+    div.id = prefix+'-outro-and-div'
+    div.innerHTML = '<label>Digite o Andar/Área</label><input id="'+prefix+'-outro-and-input" placeholder="Ex: Bloco X...">'
+    document.getElementById(prefix+'-andar').parentNode.after(div)
     sel.innerHTML = '<option value="">— Digite o andar acima —</option>'
     return
   }
 
-  // Remove campo de outro andar se existir
-  const outroAndDiv = document.getElementById(prefix+'-outro-and-div')
-  if (outroAndDiv) outroAndDiv.remove()
+  // Carrega setores personalizados do banco
+  try {
+    const { listarSetores } = await import('./db.js')
+    const customSetores = await listarSetores(andar)
+    const customNomes = customSetores.map(s => s.nome)
+    lista = [...new Set([...lista, ...customNomes])].sort()
+  } catch(e) { /* usa só os padrão */ }
 
-  // Admin pode adicionar "Outro"
-  lista.forEach(function(s){ sel.innerHTML += '<option>'+s+'</option>' })
+  lista.forEach(s => { sel.innerHTML += `<option>${s}</option>` })
   if (perfil && perfil.role === 'admin') {
     sel.innerHTML += '<option value="outro">— Outro (digitar) —</option>'
+  }
+
+  // Botão gerenciar setores — só dev
+  const gerBtn = document.getElementById(prefix+'-ger-setores')
+  if (gerBtn) gerBtn.remove()
+  if (isDev && andar && andar !== 'outro') {
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.id = prefix+'-ger-setores'
+    btn.className = 'btn bout bfull'
+    btn.style.marginTop = '6px'
+    btn.style.fontSize = '12px'
+    btn.textContent = '⚙️ Gerenciar setores deste grupo'
+    btn.onclick = () => abrirGerenciarSetores(andar)
+    sel.parentNode.after(btn)
   }
 
   sel.onchange = function() {
@@ -1901,6 +1917,108 @@ function isModoTeste() {
   }
   return false
 }
+
+// ═══════════════════════════════════════
+// GERENCIAR SETORES (só dev)
+// ═══════════════════════════════════════
+let grupoAtualSetores = ''
+
+const GRUPO_LABELS = {
+  terreo:'Térreo', ps:'Pronto-Socorro', ambulatorio:'Ambulatório',
+  odontologico:'Odontológico', laboratorio:'Laboratório',
+  '1andar':'1º Andar', '2andar':'2º Andar', '3andar':'3º Andar',
+  '4andar':'4º Andar', '5andar':'5º Andar',
+  torre:'Torre', mezanino:'Mezanino', subsolo:'Subsolo', externa:'Área Externa'
+}
+
+async function abrirGerenciarSetores(grupo) {
+  grupoAtualSetores = grupo
+  document.getElementById('tit-setores').textContent = `Setores — ${GRUPO_LABELS[grupo] || grupo}`
+  document.getElementById('setor-novo-input').value = ''
+  abrirOv('ov-setores')
+  await renderSetores()
+}
+
+async function renderSetores() {
+  const el = document.getElementById('setores-lista')
+  el.innerHTML = '<div class="loading" style="padding:16px">Carregando…</div>'
+  try {
+    const { listarSetores } = await import('./db.js')
+    const padroes = LOCAIS[grupoAtualSetores] || []
+    const custom  = await listarSetores(grupoAtualSetores)
+
+    let html = ''
+
+    // Setores padrão (somente leitura)
+    if (padroes.length) {
+      html += `<div style="padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg)">Padrão do sistema</div>`
+      html += padroes.map(s => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--bdr)">
+          <span style="font-size:13px;color:var(--ink2)">${s}</span>
+          <span style="font-size:10px;color:var(--muted);padding:2px 8px;border-radius:10px;background:var(--bg)">padrão</span>
+        </div>`).join('')
+    }
+
+    // Setores personalizados (editáveis)
+    if (custom.length) {
+      html += `<div style="padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg)">Personalizados</div>`
+      html += custom.map(s => `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--bdr)">
+          <span style="flex:1;font-size:13px;color:var(--ink)" id="setor-nome-${s.id}">${s.nome}</span>
+          <button class="btn bout bsm setor-edit" data-id="${s.id}" data-nome="${s.nome}" style="font-size:11px;height:32px;padding:0 10px">✏️</button>
+          <button class="btn bred bsm setor-del" data-id="${s.id}" data-nome="${s.nome}" style="font-size:11px;height:32px;padding:0 10px">🗑️</button>
+        </div>`).join('')
+    }
+
+    if (!padroes.length && !custom.length) {
+      html = '<div class="na" style="padding:24px">Nenhum setor cadastrado.</div>'
+    }
+
+    el.innerHTML = html
+
+    // Listeners editar
+    el.querySelectorAll('.setor-edit').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const novoNome = prompt('Novo nome para o setor:', btn.dataset.nome)
+        if (!novoNome || !novoNome.trim()) return
+        try {
+          const { atualizarSetor } = await import('./db.js')
+          await atualizarSetor(btn.dataset.id, novoNome.trim())
+          toast('✅ Setor atualizado!', 'ok')
+          renderSetores()
+        } catch(e) { toast('Erro: ' + e.message, 'err') }
+      })
+    })
+
+    // Listeners deletar
+    el.querySelectorAll('.setor-del').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ok = await confirmar('🗑️', 'Deletar setor', `Deletar "<b>${btn.dataset.nome}</b>"?`, 'Deletar')
+        if (!ok) return
+        try {
+          const { deletarSetor } = await import('./db.js')
+          await deletarSetor(btn.dataset.id)
+          toast('🗑️ Setor removido.', 'ok')
+          renderSetores()
+        } catch(e) { toast('Erro: ' + e.message, 'err') }
+      })
+    })
+  } catch(e) {
+    el.innerHTML = `<div class="na" style="padding:24px">Erro: ${e.message}</div>`
+  }
+}
+
+document.getElementById('btn-setor-add').addEventListener('click', async () => {
+  const nome = document.getElementById('setor-novo-input').value.trim()
+  if (!nome) { toast('⚠️ Digite o nome do setor'); return }
+  try {
+    const { inserirSetor } = await import('./db.js')
+    await inserirSetor(grupoAtualSetores, nome)
+    document.getElementById('setor-novo-input').value = ''
+    toast('✅ Setor adicionado!', 'ok')
+    renderSetores()
+  } catch(e) { toast('Erro: ' + e.message, 'err') }
+})
 
 // ═══════════════════════════════════════
 // HISTÓRICO
