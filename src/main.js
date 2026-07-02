@@ -1935,11 +1935,10 @@ function isModoTeste() {
 // ═══════════════════════════════════════
 // VERIFICAÇÃO DE NÚMERO DUPLICADO
 // ═══════════════════════════════════════
-function verificarNumDuplicado(inputId, lista, prefixo) {
+function iniciarVerificacaoNum(inputId, prefixo, getLista) {
   const input = document.getElementById(inputId)
   if (!input) return
 
-  // Cria ou reutiliza o aviso
   let aviso = document.getElementById(inputId + '-aviso')
   if (!aviso) {
     aviso = document.createElement('div')
@@ -1949,15 +1948,14 @@ function verificarNumDuplicado(inputId, lista, prefixo) {
   }
 
   input.addEventListener('blur', () => {
-    // Só verifica em novo cadastro (não edição)
-    if (editExtId && inputId === 'ef-num') return
-    if (editHidId && inputId === 'hf-num') return
+    if (editExtId && inputId === 'ef-num') { aviso.style.display='none'; return }
+    if (editHidId && inputId === 'hf-num') { aviso.style.display='none'; return }
 
     const raw = input.value.trim()
-    if (!raw) { aviso.style.display = 'none'; return }
+    if (!raw) { aviso.style.display = 'none'; input.style.borderColor = ''; return }
 
-    // Formata igual ao sistema (ex: 1 → EXT-001)
     const num = isNaN(raw) ? raw.toUpperCase() : `${prefixo}-${String(raw).padStart(3,'0')}`
+    const lista = getLista()
     const existe = lista.find(item => item.num === num)
 
     if (existe) {
@@ -1975,16 +1973,12 @@ function verificarNumDuplicado(inputId, lista, prefixo) {
     }
   })
 
-  input.addEventListener('focus', () => {
-    input.style.borderColor = ''
-  })
+  input.addEventListener('focus', () => { input.style.borderColor = '' })
 }
 
-// Inicializa verificações após DOM carregar
-document.addEventListener('DOMContentLoaded', () => {
-  verificarNumDuplicado('ef-num', EXT, 'EXT')
-  verificarNumDuplicado('hf-num', HID, 'HID')
-})
+// Inicializa verificações — usa função lambda para pegar lista atualizada no momento
+iniciarVerificacaoNum('ef-num', 'EXT', () => EXT)
+iniciarVerificacaoNum('hf-num', 'HID', () => HID)
 
 // ═══════════════════════════════════════
 // CÂMERA — força câmera traseira
