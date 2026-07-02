@@ -596,12 +596,15 @@ async function filtrarSetor(tipo) {
     return
   }
 
-  // Carrega setores personalizados do banco
+  // Carrega setores personalizados do banco e filtra ocultos
   try {
-    const { listarSetores } = await import('./db.js')
+    const { listarSetores, listarSetoresOcultos } = await import('./db.js')
     const customSetores = await listarSetores(andar)
+    const ocultos = await listarSetoresOcultos(andar)
     const customNomes = customSetores.map(s => s.nome)
-    lista = [...new Set([...lista, ...customNomes])].sort()
+    lista = [...new Set([...lista, ...customNomes])]
+      .filter(s => !ocultos.includes(s))
+      .sort()
   } catch(e) { /* usa só os padrão */ }
 
   lista.forEach(s => { sel.innerHTML += `<option>${s}</option>` })
@@ -1946,23 +1949,25 @@ async function renderSetores() {
   const el = document.getElementById('setores-lista')
   el.innerHTML = '<div class="loading" style="padding:16px">Carregando…</div>'
   try {
-    const { listarSetores } = await import('./db.js')
-    const padroes = LOCAIS[grupoAtualSetores] || []
-    const custom  = await listarSetores(grupoAtualSetores)
+    const { listarSetores, listarSetoresOcultos, ocultarSetor, restaurarSetor, deletarSetor, atualizarSetor } = await import('./db.js')
+    const padroes  = LOCAIS[grupoAtualSetores] || []
+    const custom   = await listarSetores(grupoAtualSetores)
+    const ocultos  = await listarSetoresOcultos(grupoAtualSetores)
+    const visiveis = padroes.filter(s => !ocultos.includes(s))
 
     let html = ''
 
-    // Setores padrão (com opção de deletar da lista padrão local)
-    if (padroes.length) {
+    // Setores padrão visíveis
+    if (visiveis.length) {
       html += `<div style="padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg)">Padrão do sistema</div>`
-      html += padroes.map(s => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--bdr)">
-          <span style="font-size:13px;color:var(--ink2)">${s}</span>
-          <span style="font-size:10px;color:var(--muted);padding:2px 8px;border-radius:10px;background:var(--bg)">padrão</span>
+      html += visiveis.map(s => `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--bdr)">
+          <span style="flex:1;font-size:13px;color:var(--ink2)">${s}</span>
+          <button class="btn bred bsm pad-del" data-nome="${s}" style="font-size:11px;height:32px;padding:0 10px">🗑️</button>
         </div>`).join('')
     }
 
-    // Setores personalizados (editáveis e deletáveis)
+    // Setores personalizados
     if (custom.length) {
       html += `<div style="padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg)">Personalizados</div>`
       html += custom.map(s => `
@@ -1973,19 +1978,52 @@ async function renderSetores() {
         </div>`).join('')
     }
 
-    if (!padroes.length && !custom.length) {
+    // Setores ocultos (com opção de restaurar)
+    if (ocultos.length) {
+      html += `<div style="padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--bg)">Ocultos (deletados)</div>`
+      html += ocultos.map(s => `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--bdr);opacity:.6">
+          <span style="flex:1;font-size:13px;color:var(--muted);text-decoration:line-through">${s}</span>
+          <button class="btn bgreen bsm pad-rest" data-nome="${s}" style="font-size:11px;height:32px;padding:0 10px">↩️ Restaurar</button>
+        </div>`).join('')
+    }
+
+    if (!visiveis.length && !custom.length && !ocultos.length) {
       html = '<div class="na" style="padding:24px">Nenhum setor cadastrado.</div>'
     }
 
     el.innerHTML = html
 
-    // Listeners editar
+    // Deletar padrão (ocultar)
+    el.querySelectorAll('.pad-del').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ok = await confirmar('🗑️', 'Ocultar setor', `Ocultar "<b>${btn.dataset.nome}</b>"? Pode restaurar depois.`, 'Ocultar')
+        if (!ok) return
+        try {
+          await ocultarSetor(grupoAtualSetores, btn.dataset.nome)
+          toast('🗑️ Setor ocultado.', 'ok')
+          renderSetores()
+        } catch(e) { toast('Erro: ' + e.message, 'err') }
+      })
+    })
+
+    // Restaurar padrão
+    el.querySelectorAll('.pad-rest').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await restaurarSetor(grupoAtualSetores, btn.dataset.nome)
+          toast('✅ Setor restaurado!', 'ok')
+          renderSetores()
+        } catch(e) { toast('Erro: ' + e.message, 'err') }
+      })
+    })
+
+    // Editar personalizado
     el.querySelectorAll('.setor-edit').forEach(btn => {
       btn.addEventListener('click', async () => {
         const novoNome = prompt('Novo nome para o setor:', btn.dataset.nome)
         if (!novoNome || !novoNome.trim()) return
         try {
-          const { atualizarSetor } = await import('./db.js')
           await atualizarSetor(btn.dataset.id, novoNome.trim())
           toast('✅ Setor atualizado!', 'ok')
           renderSetores()
@@ -1993,19 +2031,19 @@ async function renderSetores() {
       })
     })
 
-    // Listeners deletar
+    // Deletar personalizado
     el.querySelectorAll('.setor-del').forEach(btn => {
       btn.addEventListener('click', async () => {
         const ok = await confirmar('🗑️', 'Deletar setor', `Deletar "<b>${btn.dataset.nome}</b>"?`, 'Deletar')
         if (!ok) return
         try {
-          const { deletarSetor } = await import('./db.js')
           await deletarSetor(btn.dataset.id)
           toast('🗑️ Setor removido.', 'ok')
           renderSetores()
         } catch(e) { toast('Erro: ' + e.message, 'err') }
       })
     })
+
   } catch(e) {
     el.innerHTML = `<div class="na" style="padding:24px">Erro: ${e.message}</div>`
   }

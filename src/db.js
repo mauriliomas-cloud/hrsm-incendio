@@ -85,6 +85,31 @@ export async function deletarHidrante(id) {
 }
 
 // ══════════════════════════════════════
+export async function listarSetoresOcultos(grupo) {
+  const { data, error } = await supabase
+    .from('setores_ocultos')
+    .select('nome')
+    .eq('grupo', grupo)
+  if (error) throw error
+  return data.map(d => d.nome)
+}
+
+export async function ocultarSetor(grupo, nome) {
+  const { error } = await supabase
+    .from('setores_ocultos')
+    .upsert([{ grupo, nome }])
+  if (error) throw error
+}
+
+export async function restaurarSetor(grupo, nome) {
+  const { error } = await supabase
+    .from('setores_ocultos')
+    .delete()
+    .eq('grupo', grupo)
+    .eq('nome', nome)
+  if (error) throw error
+}
+
 // ══════════════════════════════════════
 // SETORES PERSONALIZADOS
 // ══════════════════════════════════════
