@@ -1,5 +1,5 @@
 {
-  "name": "Brigada 360 — HRSM",
+  "name": "Brigada 360",
   "short_name": "Brigada 360",
   "description": "Sistema de Controle de Combate a Incêndio — Brigada 360",
   "start_url": "/",
@@ -9,14 +9,16 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://bwumbwmwsmtqjmlzvpnx.supabase.co/storage/v1/object/public/fotos/HRSM.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://bwumbwmwsmtqjmlzvpnx.supabase.co/storage/v1/object/public/fotos/HRSM.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
